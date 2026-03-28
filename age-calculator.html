@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Exact Age Calculator — Convertkaro.in</title>
+<meta name="description" content="Calculate your exact age in years, months, and days for Govt. exams and online form cut-off dates.">
+<link rel="icon" type="image/x-icon" href="favicon.ico">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/pikaday/css/pikaday.css">
+
+<style>
+/* ── UI/UX FRAMEWORK ── */
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior:smooth; }
+:root { --bg: #f8f7f4; --white: #ffffff; --red: #e02b20; --red-hover: #c4231a; --red-light: rgba(224,43,32,0.07); --ink: #141414; --ink-2: #3d3d3d; --ink-3: #888; --border: #e4e2dc; --success: #2d8a4e; --success-bg: #edf7f1; }
+body { background: var(--bg); color: var(--ink); font-family: 'Plus Jakarta Sans', sans-serif; -webkit-font-smoothing: antialiased; overflow-x: hidden;}
+
+/* ── LAYOUT ── */
+.container-1140 { max-width: 1140px; margin: 0 auto; padding: 0 48px; width: 100%; box-sizing: border-box; }
+
+/* ── NAV BAR ── */
+nav { position: fixed; top:0; left:0; right:0; z-index:100; height:68px; background:rgba(248,247,244,0.92); backdrop-filter:blur(20px); border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; padding:0 48px; }
+.logo { display:flex; align-items:center; gap:9px; text-decoration:none; } 
+.logo-mark img { width:32px; height:32px; object-fit:cover; border-radius:8px; }
+.logo-name { font-size:17px; font-weight:700; color:var(--ink); letter-spacing:-0.4px; } 
+.logo-name span { color:var(--red); }
+.nav-links { display:flex; gap:32px; list-style:none; } 
+.nav-links a { font-size:14px; font-weight:500; color:var(--ink-3); text-decoration:none; transition:color .2s; }
+.nav-links a:hover { color:var(--ink); }
+.nav-cta { background:var(--red); color:#fff; font-size:13px; font-weight:700; padding:10px 20px; border-radius:10px; cursor:pointer; text-decoration:none; transition: 0.2s; border:none; display:inline-flex; align-items:center;}
+.nav-cta:hover { background:var(--red-hover); transform:translateY(-1px); }
+
+/* ── HERO SECTION ── */
+.breadcrumb { padding-top: 100px; display: flex; align-items: center; justify-content: flex-start; gap: 8px; font-size: 13px; color: var(--ink-3); }
+.breadcrumb a { color: var(--ink-3); text-decoration: none; transition: 0.2s; }
+.breadcrumb a:hover { color: var(--red); }
+.breadcrumb strong { color: var(--ink-2); font-weight: 600; }
+
+.page-hero { padding: 24px 0 48px; display: flex; align-items: center; gap: 24px; text-align: left; }
+.tool-icon-big { width: 72px; height: 72px; border-radius: 18px; background: var(--red-light); border: 1.5px solid rgba(224,43,32,0.2); display: grid; place-items: center; font-size: 34px; flex-shrink: 0; }
+.page-hero-text { display: flex; flex-direction: column; }
+.student-badge-hero { display:inline-block; background:#fff2e5; color:#e67300; font-size:12px; font-weight:700; padding:4px 10px; border-radius:6px; margin-bottom:8px; border:1px solid #ffcc99; width: fit-content;}
+.page-title { font-size: 38px; font-weight: 800; letter-spacing: -1px; color: var(--ink); margin-bottom: 8px; } 
+.page-title .serif { font-family:'Instrument Serif',serif; font-style:italic; font-weight:400; color:var(--red); }
+.page-sub { font-size:16px; color:var(--ink-3); max-width: 580px; line-height: 1.5; margin: 0; }
+
+/* ── AGE CALCULATOR UI ── */
+.main-content { padding-bottom: 80px; }
+.dob-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; align-items: stretch; width: 100%; margin-bottom: 48px;}
+.dob-form-card { width: 100%; background: var(--white); border: 1px solid var(--border); border-radius: 20px; padding: 32px; text-align: left; box-shadow: 0 4px 20px rgba(0,0,0,0.02); box-sizing: border-box; }
+.dob-form-card h3 { font-size: 18px; font-weight: 800; color: var(--ink); margin-bottom: 24px; border-bottom: 1px solid var(--border); padding-bottom: 16px;}
+
+.form-group { margin-bottom: 24px; }
+.form-group label { display: block; font-size: 14px; font-weight: 700; color: var(--ink); margin-bottom: 8px; }
+.form-input { width: 100%; padding: 14px 16px; border: 1.5px solid var(--border); border-radius: 10px; background: #fafafa; font-family: inherit; font-size: 15px; outline: none; cursor: text; transition: 0.2s; box-sizing: border-box; color: var(--ink); font-weight: 600;}
+.form-input:focus { border-color: var(--red); background: var(--white); }
+.form-hint { font-size: 12px; color: var(--ink-3); margin-top: 8px; }
+
+.btn-red-full { width: 100%; background: var(--red); color: #fff; padding: 16px; border-radius: 10px; border: none; font-weight: 700; font-size: 15px; font-family: inherit; cursor: pointer; margin-top: 8px; transition: 0.2s; }
+.btn-red-full:hover { background: var(--red-hover); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(224,43,32,0.25); }
+
+/* Updated Result Box UI - Background is now white */
+.age-result-box { width: 100%; background: var(--white); border: 2px dashed var(--border); border-radius: 20px; padding: 40px; text-align: center; transition: 0.3s; display: flex; align-items: center; justify-content: center; flex-direction: column; min-height: 300px; box-sizing: border-box; }
+.age-result-box.active { border-style: solid; border-color: var(--success); background: var(--success-bg); }
+
+.age-placeholder { display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.ap-icon { font-size: 48px; opacity: 0.3; margin-bottom: 16px; }
+.ap-title { font-size: 16px; font-weight: 700; color: var(--ink-2); margin-bottom: 8px; }
+.ap-sub { font-size: 13px; color: var(--ink-3); line-height: 1.5; }
+
+.age-numbers { display: none; align-items: center; justify-content: center; gap: 20px; width: 100%; }
+.age-numbers.active { display: flex; }
+.an-block { flex: 1; background: var(--white); border: 1.5px solid rgba(45,138,78,0.2); border-radius: 16px; padding: 20px; box-shadow: 0 8px 24px rgba(45,138,78,0.06); }
+.an-val { font-size: 40px; font-weight: 800; color: var(--success); line-height: 1; margin-bottom: 4px; }
+.an-lbl { font-size: 12px; font-weight: 700; color: var(--ink-2); text-transform: uppercase; letter-spacing: 0.05em; }
+
+/* ── OTHER TOOLS & HOW TO ── */
+.other-tools { margin-bottom:48px; width: 100%; box-sizing: border-box;}
+.other-title { font-size:20px; font-weight:800; letter-spacing:-0.5px; color:var(--ink); margin-bottom:20px; }
+.tools-mini-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; }
+.mini-card { background:var(--white); border:1px solid var(--border); border-radius:16px; padding:20px; text-decoration:none; display:block; transition:all .25s; box-sizing: border-box; }
+.mini-card:hover { border-color:var(--red); transform:translateY(-3px); box-shadow:0 8px 24px rgba(224,43,32,0.08); }
+.mini-icon { font-size:24px; margin-bottom:12px; }
+.mini-name { font-size:15px; font-weight:800; color:var(--ink); margin-bottom:6px; letter-spacing:-0.2px; }
+.mini-desc { font-size:13px; color:var(--ink-3); line-height:1.4; margin: 0; }
+
+.how-section { background:var(--white); border:1px solid var(--border); border-radius:20px; padding:40px 48px; margin-bottom:48px; box-sizing: border-box; width: 100%;}
+.how-title { font-size:22px; font-weight:800; letter-spacing:-0.5px; color:var(--ink); margin-bottom:32px; }
+.how-title .serif { font-family:'Instrument Serif',serif; font-style:italic; font-weight:400; color:var(--red); }
+.how-steps { display:grid; grid-template-columns:repeat(3,1fr); gap:32px; }
+.how-step { text-align:center; }
+.how-num { width:44px; height:44px; border-radius:12px; background:var(--red-light); border:1.5px solid rgba(224,43,32,.2); display:grid; place-items:center; margin:0 auto 16px; font-family:'Instrument Serif',serif; font-style:italic; font-size:20px; color:var(--red); }
+.how-step-title { font-size:15px; font-weight:800; color:var(--ink); margin-bottom:8px; }
+.how-step-desc { font-size:13px; color:var(--ink-3); line-height:1.6; margin: 0; }
+
+/* ── FOOTER ── */
+footer { border-top:1px solid var(--border); background:var(--white); padding:32px 48px; display:flex; justify-content:space-between; align-items:center; width: 100%; box-sizing: border-box;}
+.ft-copy { font-size:13px; color:var(--ink-3); }
+.ft-india { font-size:13px; color:var(--ink-3); font-weight:500; }
+.ft-india span { color:var(--red); }
+
+@media(max-width:768px){ 
+  .breadcrumb, .page-hero, .main-content { padding-left: 20px; padding-right: 20px; }
+  nav, footer { padding: 0 20px; }
+  .nav-links { display: none; }
+  .dob-layout { grid-template-columns: 1fr; }
+  .age-numbers.active { flex-direction: column; gap: 12px; }
+  .page-title { font-size: 28px; }
+  .tools-mini-grid { grid-template-columns:repeat(2,1fr); }
+  .how-steps { grid-template-columns:1fr; }
+  footer { flex-direction:column-reverse; gap:12px; text-align:center;}
+}
+
+/* Pikaday Theme Overrides */
+.pika-single { font-family: 'Plus Jakarta Sans', sans-serif; border: 1.5px solid var(--border); border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); }
+.is-selected .pika-button { background: var(--red); box-shadow: none; border-radius: 6px; }
+.pika-button:hover { background: var(--red-light); color: var(--red); border-radius: 6px; }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="logo">
+    <div class="logo-mark"><img src="favicon.ico" alt="Convertkaro"></div>
+    <div class="logo-name">Convertkaro<span>.in</span></div>
+  </a>
+  <ul class="nav-links">
+    <li><a href="index.html#tools">Tools</a></li>
+    <li><a href="index.html#how">How it works</a></li> 
+    <li><a href="index.html#about">About</a></li>
+  </ul>
+  <button class="nav-cta" onclick="document.getElementById('dobInput').focus()">Calculate Age</button>
+</nav>
+
+<div class="breadcrumb container-1140">
+  <a href="index.html">Home</a> <span>›</span> <a href="index.html#tools">All Tools</a> <span>›</span> <strong>Age Calculator</strong>
+</div>
+
+<header class="page-hero container-1140">
+  <div class="tool-icon-big">📅</div>
+  <div class="page-hero-text">
+    <div class="student-badge-hero">👨‍🎓 Govt. Job & College Forms</div>
+    <h1 class="page-title">Exact Age <span class="serif">Calculator</span></h1>
+    <p class="page-sub">Calculate your exact age in years, months, and days for Govt. exams and online form cut-off dates.</p>
+  </div>
+</header>
+
+<main class="main-content container-1140">
+  
+  <div class="dob-layout">
+    <div class="dob-form-card">
+        <h3>Enter Form Dates</h3>
+        
+        <div class="form-group">
+          <label>Your Date of Birth *</label>
+          <input type="text" id="dobInput" class="form-input" placeholder="DD/MM/YYYY" autocomplete="off" maxlength="10">
+        </div>
+
+        <div class="form-group">
+          <label>Calculate Age As On *</label>
+          <input type="text" id="targetDate" class="form-input" placeholder="DD/MM/YYYY" autocomplete="off" maxlength="10">
+          <div class="form-hint">Defaults to today. Adjust based on form notification.</div>
+        </div>
+
+        <button class="btn-red-full" onclick="calculateAge()">Calculate Exact Age</button>
+    </div>
+
+    <div class="age-result-box" id="ageResultBox">
+      <div class="age-placeholder" id="agePlaceholder">
+        <div class="ap-icon">⏱️</div>
+        <div class="ap-title">Ready to calculate</div>
+        <div class="ap-sub">Type your dates or select from the calendar,<br>then click calculate to see your exact age.</div>
+      </div>
+      <div class="age-numbers" id="ageNumbers">
+        <div class="an-block">
+          <div class="an-val" id="resYears">00</div>
+          <div class="an-lbl">Years</div>
+        </div>
+        <div class="an-block">
+          <div class="an-val" id="resMonths">00</div>
+          <div class="an-lbl">Months</div>
+        </div>
+        <div class="an-block">
+          <div class="an-val" id="resDays">00</div>
+          <div class="an-lbl">Days</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="other-tools">
+    <div class="other-title">Other free tools</div>
+    <div class="tools-mini-grid">
+      <a href="merge-pdf.html" class="mini-card"><div class="mini-icon">🔗</div><div class="mini-name">Merge PDF</div><div class="mini-desc">Combine multiple PDFs</div></a>
+      <a href="split-pdf.html" class="mini-card"><div class="mini-icon">✂️</div><div class="mini-name">Split PDF</div><div class="mini-desc">Break PDF into separate files</div></a>
+      <a href="compress-pdf.html" class="mini-card"><div class="mini-icon">📦</div><div class="mini-name">Compress PDF</div><div class="mini-desc">Reduce PDF file size</div></a>
+      <a href="protect-pdf.html" class="mini-card"><div class="mini-icon">🔒</div><div class="mini-name">Protect PDF</div><div class="mini-desc">Add a password to your PDF</div></a>
+    </div>
+  </div>
+
+  <div class="how-section">
+    <div class="how-title">How to use <span class="serif">Age Calculator</span></div>
+    <div class="how-steps">
+      <div class="how-step">
+        <div class="how-num">1</div>
+        <div class="how-step-title">Enter Date of Birth</div>
+        <div class="how-step-desc">Type your DOB manually (DD/MM/YYYY) or click to open the calendar and select it.</div>
+      </div>
+      <div class="how-step">
+        <div class="how-num">2</div>
+        <div class="how-step-title">Select Target Date</div>
+        <div class="how-step-desc">Set the date provided in your form notification (Calculate age as on). It defaults to today.</div>
+      </div>
+      <div class="how-step">
+        <div class="how-num">3</div>
+        <div class="how-step-title">Get Results</div>
+        <div class="how-step-desc">Click calculate to see your exact age broken down into years, months, and days perfectly.</div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<footer>
+  <div class="ft-copy">© 2026 Convertkaro.in — All rights reserved.</div>
+  <div class="ft-india">Made with <span>♥</span> in India 🇮🇳</div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/pikaday/pikaday.js"></script>
+
+<script>
+// ── AUTO-SLASH FORMATTER FOR INPUT FIELDS ──
+function autoFormatDate(e) {
+  let input = e.target.value.replace(/\D/g, ''); // Strip non-digits
+  if (input.length > 8) input = input.substring(0, 8);
+
+  let formatted = input;
+  if (input.length > 4) {
+    formatted = input.substring(0, 2) + '/' + input.substring(2, 4) + '/' + input.substring(4, 8);
+  } else if (input.length > 2) {
+    formatted = input.substring(0, 2) + '/' + input.substring(2, 4);
+  }
+  e.target.value = formatted;
+}
+
+document.getElementById('dobInput').addEventListener('input', autoFormatDate);
+document.getElementById('targetDate').addEventListener('input', autoFormatDate);
+
+// ── DOB CALCULATOR LOGIC (WITH MANUAL TYPING SUPPORT) ──
+const customParse = function(dateString) {
+  const parts = dateString.split('/');
+  if(parts.length === 3) {
+    const day = parseInt(parts[0], 10);
+    const month = parseInt(parts[1], 10) - 1;
+    const year = parseInt(parts[2], 10);
+    return new Date(year, month, day);
+  }
+  return new Date(dateString); 
+};
+
+const customFormat = function(date) {
+  const day = date.getDate().toString().padStart(2, '0');
+  const month = (date.getMonth() + 1).toString().padStart(2, '0');
+  const year = date.getFullYear();
+  return `${day}/${month}/${year}`;
+};
+
+const calendarConfig = {
+    format: 'DD/MM/YYYY',
+    parse: customParse,
+    toString: customFormat,
+    showDaysInNextAndPreviousMonths: true,
+    enableSelectionDaysInNextAndPreviousMonths: true,
+    theme: 'triangle-theme-red'
+};
+
+var pickerDob = new Pikaday({
+    ...calendarConfig,
+    field: document.getElementById('dobInput'), 
+    yearRange: [1920, new Date().getFullYear()],
+    maxDate: new Date(),
+});
+
+var pickerTarget = new Pikaday({
+    ...calendarConfig,
+    field: document.getElementById('targetDate'),
+    yearRange: [1920, new Date().getFullYear() + 20],
+    defaultDate: new Date(),
+    setDefaultDate: true
+});
+
+function calculateAge() {
+  const dobInput = document.getElementById('dobInput').value; 
+  const targetDateInput = document.getElementById('targetDate').value;
+
+  if (!dobInput || !targetDateInput) return alert("Please enter both dates!");
+  
+  const dob = customParse(dobInput);
+  const target = customParse(targetDateInput);
+
+  if (isNaN(dob.getTime()) || isNaN(target.getTime())) {
+    return alert("Invalid date format. Please use DD/MM/YYYY.");
+  }
+
+  if (dob > target) return alert("Date of Birth cannot be after the 'Calculate As On' date!");
+
+  let years = target.getFullYear() - dob.getFullYear();
+  let months = target.getMonth() - dob.getMonth();
+  let days = target.getDate() - dob.getDate();
+
+  if (days < 0) { 
+    months--; 
+    days += new Date(target.getFullYear(), target.getMonth(), 0).getDate(); 
+  }
+  if (months < 0) { 
+    years--; 
+    months += 12; 
+  }
+
+  document.getElementById('agePlaceholder').style.display = 'none';
+  document.getElementById('resYears').innerText = years.toString().padStart(2, '0');
+  document.getElementById('resMonths').innerText = months.toString().padStart(2, '0');
+  document.getElementById('resDays').innerText = days.toString().padStart(2, '0');
+  
+  const resultBox = document.getElementById('ageResultBox');
+  resultBox.classList.add('active');
+  document.getElementById('ageNumbers').classList.add('active');
+}
+</script>
+</body>
+</html>

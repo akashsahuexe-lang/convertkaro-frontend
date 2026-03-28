@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Crop PDF Tool — Convertkaro.in</title>
+<link rel="icon" type="image/x-icon" href="favicon.ico">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
+<script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+<link rel="stylesheet" href="style.css">
+
+<style>
+/* ── ADVANCED CROP EDITOR UI PROPERTIES (Preserved) ── */
+.crop-workspace-panel { display: none; background: var(--white); border: 1.5px solid var(--border); border-radius: 20px; overflow: hidden; margin-bottom: 32px; box-shadow: 0 10px 40px rgba(0,0,0,0.05); }
+.crop-workspace-panel.active { display: block; }
+
+.editor-layout { display: flex; height: 680px; background: #f8f8fa; position: relative; border-bottom: 1px solid var(--border); }
+
+/* Sidebar */
+.sidebar-pages { width: 220px; background: var(--white); border-right: 1px solid var(--border); overflow-y: auto; padding: 20px; flex-shrink: 0; }
+.side-thumb { border: 2px solid var(--border); border-radius: 10px; margin-bottom: 16px; cursor: pointer; position: relative; background: #fff; transition: 0.2s; overflow: hidden; }
+.side-thumb.active { border-color: var(--red); box-shadow: 0 0 0 4px rgba(224,43,32,0.1); }
+.side-thumb canvas { width: 100%; display: block; }
+.side-page-num { position: absolute; top: 6px; left: 6px; background: rgba(20,20,20,0.7); color: #fff; font-size: 10px; padding: 2px 8px; border-radius: 6px; font-weight: 700; }
+.crop-tag { position: absolute; bottom: 6px; right: 6px; background: var(--success); color: #fff; font-size: 9px; padding: 2px 6px; border-radius: 4px; font-weight: 800; display: none; }
+.side-thumb.has-crop .crop-tag { display: block; }
+
+/* Editor Viewport & Zoom Controls */
+.main-editor-area { flex: 1; display: flex; flex-direction: column; background: #ecedf0; position: relative; }
+.editor-tools-top { height: 48px; background: #fff; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: center; gap: 12px; z-index: 5; }
+.zoom-btn { background: var(--bg); border: 1px solid var(--border); width: 32px; height: 32px; border-radius: 8px; cursor: pointer; font-weight: 700; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
+.zoom-btn:hover { border-color: var(--red); color: var(--red); }
+.zoom-val { font-size: 12px; font-weight: 700; color: var(--ink-2); min-width: 45px; text-align: center; }
+
+.canvas-container { flex: 1; padding: 40px; display: flex; align-items: center; justify-content: center; overflow: auto; }
+.canvas-wrapper { background: #fff; box-shadow: 0 20px 60px rgba(0,0,0,0.12); line-height: 0; position: relative; transition: transform 0.2s ease-out; transform-origin: center center; }
+#pdfCanvas { max-width: 100%; height: auto; }
+
+/* Cropper Visibility */
+.cropper-view-box { outline: 2px solid var(--red); }
+.cropper-point { background-color: var(--red); width: 10px !important; height: 10px !important; opacity: 1; border-radius: 2px; }
+
+.editor-footer { padding: 18px 28px; background: #fff; display: flex; justify-content: space-between; align-items: center; }
+.btn-dl-crop { background: var(--red); color: #fff; border: none; padding: 14px 36px; border-radius: 12px; font-weight: 700; cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 10px; }
+.btn-dl-crop:hover { background: var(--red-hover); transform: translateY(-2px); box-shadow: 0 8px 20px rgba(224,43,32,0.2); }
+.btn-dl-crop:disabled { background: #ccc; cursor: not-allowed; }
+
+.fade-up { opacity: 1 !important; transform: none !important; }
+</style>
+</head>
+<body>
+
+<div class="toast" id="toast"></div>
+<input type="file" id="pdfInput" accept="application/pdf" style="position:absolute; width:1px; height:1px; opacity:0; pointer-events:none;" onchange="initEditor(this.files[0])">
+
+<nav>
+  <a href="index.html" class="logo">
+    <div class="logo-mark"><img src="favicon.ico" alt="Convertkaro"></div>
+    <div class="logo-name">Convertkaro<span>.in</span></div>
+  </a>
+  <ul class="nav-links">
+    <li><a href="index.html#tools">Tools</a></li>
+    <li><a href="index.html#how">How it works</a></li>
+    <li><a href="index.html#about">About</a></li>
+  </ul>
+  <label for="pdfInput" class="nav-cta" style="cursor:pointer; display:inline-flex; align-items:center;">Upload PDF & Crop</label>
+</nav>
+
+<div class="breadcrumb">
+  <a href="index.html">Home</a> <span>›</span> <a href="index.html#tools">All Tools</a> <span>›</span> <strong>Crop PDF</strong>
+</div>
+
+<div class="page-hero">
+  <div class="tool-icon-big">✂️</div>
+  <div class="page-hero-text">
+    <h1 class="page-title">Crop PDF <span class="serif">Individually</span></h1>
+    <p class="page-sub">Switch pages, zoom to pinpoint, and crop. Your files never leave your browser.</p>
+  </div>
+</div>
+
+<div class="main">
+  <label for="pdfInput" class="upload-zone" id="uploadArea" style="display: flex; flex-direction: column; align-items: center; cursor: pointer;">
+    <div class="uz-icon">📁</div>
+    <div class="uz-title">Drop your PDF here</div>
+    <div class="uz-sub">or click to select a file from your device</div>
+    <div class="uz-btn">Select PDF File</div>
+    <div class="uz-note" style="margin-top:20px; font-size:12px; color:var(--ink-3);">🔒 Your file never leaves your device — 100% private</div>
+  </label>
+
+  <div id="cropWorkspace" class="crop-workspace-panel">
+    <div class="panel-header">
+      <div class="panel-title">Editor Mode <span class="file-badge" id="fileNameBadge" style="background: var(--success-bg); color: var(--success); margin-left: 8px; padding: 4px 12px; border-radius: 99px;">document.pdf</span></div>
+      <div style="display:flex; gap:12px;">
+        <button class="btn-ghost-sm" onclick="applyToAll()" style="font-size: 12px; font-weight: 600;">Apply current crop to all pages</button>
+        <button class="btn-ghost-sm" onclick="location.reload()" style="font-size: 12px; font-weight: 600;">✕ Reset</button>
+      </div>
+    </div>
+
+    <div class="editor-layout">
+      <div class="sidebar-pages" id="sidebarPages"></div>
+
+      <div class="main-editor-area">
+        <div class="editor-tools-top">
+          <button class="zoom-btn" onclick="adjustZoom(-0.1)">−</button>
+          <div class="zoom-val" id="zoomVal">100%</div>
+          <button class="zoom-btn" onclick="adjustZoom(0.1)">+</button>
+          <button class="zoom-btn" onclick="resetZoom()" title="Fit to screen">⛶</button>
+        </div>
+        <div class="canvas-container">
+          <div class="canvas-wrapper" id="canvasWrapper">
+            <canvas id="pdfCanvas"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="editor-footer">
+      <div style="font-size: 13px; color: var(--ink-3); font-weight: 500;">Select area and download. Pages with green tags are customized.</div>
+      <button id="btnCrop" class="btn-dl-crop" onclick="generateFinalPDF()">✂️ Download Cropped PDF</button>
+    </div>
+  </div>
+
+  <div class="how-section">
+    <div class="how-title">How to <span class="serif">crop a PDF</span></div>
+    <div class="how-steps">
+      <div class="how-step">
+        <div class="how-num">1</div>
+        <div class="how-step-title">Upload your PDF</div>
+        <div class="how-step-desc">Drop your PDF or click to choose from your device. Any size works.</div>
+      </div>
+      <div class="how-step">
+        <div class="how-num">2</div>
+        <div class="how-step-title">Select Crop Area</div>
+        <div class="how-step-desc">Pick pages from sidebar and draw the crop area. Use zoom for pinpoint accuracy.</div>
+      </div>
+      <div class="how-step">
+        <div class="how-num">3</div>
+        <div class="how-step-title">Download Result</div>
+        <div class="how-step-desc">Click download to get your cropped PDF instantly. No files leave your device.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="other-tools">
+    <div class="other-title">Other free tools</div>
+    <div class="tools-mini-grid">
+      <a href="split-pdf.html" class="mini-card">
+        <div class="mini-icon">✂️</div>
+        <div class="mini-name">Split PDF</div>
+        <div class="mini-desc">Break a PDF into separate files</div>
+      </a>
+      <a href="merge-pdf.html" class="mini-card">
+        <div class="mini-icon">🔗</div>
+        <div class="mini-name">Merge PDF</div>
+        <div class="mini-desc">Combine multiple PDFs into one</div>
+      </a>
+      <a href="compress-pdf.html" class="mini-card">
+        <div class="mini-icon">📦</div>
+        <div class="mini-name">Compress PDF</div>
+        <div class="mini-desc">Reduce PDF file size instantly</div>
+      </a>
+      <a href="pdf-to-image.html" class="mini-card">
+        <div class="mini-icon">🖼️</div>
+        <div class="mini-name">PDF to Image</div>
+        <div class="mini-desc">Convert PDF pages to JPG/PNG</div>
+      </a>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  <div class="ft-india">Made with <span>♥</span> in India 🇮🇳</div>
+  <div class="ft-copy">© 2026 Convertkaro.in — All rights reserved.</div>
+</footer>
+
+<script>
+pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+let pdfBytes = null;
+let pdfJsDoc = null;
+let cropper = null;
+let currentPage = 1;
+let pageCrops = {};
+let currentScale = 1.0;
+let baseCanvasSize = { w: 0, h: 0 };
+
+async function initEditor(file) {
+  if (!file) return;
+  showToast("Opening Editor...");
+  
+  const buffer = await file.arrayBuffer();
+  pdfBytes = new Uint8Array(buffer);
+  
+  const pdfJsBuffer = pdfBytes.slice();
+  pdfJsDoc = await pdfjsLib.getDocument({ data: pdfJsBuffer }).promise;
+
+  document.getElementById('uploadArea').style.display = 'none';
+  document.getElementById('cropWorkspace').classList.add('active');
+  document.getElementById('fileNameBadge').textContent = file.name;
+
+  await renderSidebar();
+  loadPage(1);
+}
+
+async function renderSidebar() {
+  const sidebar = document.getElementById('sidebarPages');
+  sidebar.innerHTML = '';
+  for (let i = 1; i <= pdfJsDoc.numPages; i++) {
+    const page = await pdfJsDoc.getPage(i);
+    const vp = page.getViewport({ scale: 0.15 });
+    const canvas = document.createElement('canvas');
+    canvas.width = vp.width; canvas.height = vp.height;
+    await page.render({ canvasContext: canvas.getContext('2d'), viewport: vp }).promise;
+
+    const div = document.createElement('div');
+    div.className = 'side-thumb' + (i === 1 ? ' active' : '');
+    div.id = `thumb-${i}`;
+    div.innerHTML = `<div class="side-page-num">${i}</div><div class="crop-tag">CROPPED</div>`;
+    div.prepend(canvas);
+    div.onclick = () => loadPage(i);
+    sidebar.appendChild(div);
+  }
+}
+
+async function loadPage(num) {
+  if (cropper) {
+    pageCrops[currentPage] = cropper.getData();
+    document.getElementById(`thumb-${currentPage}`).classList.add('has-crop');
+  }
+
+  currentPage = num;
+  document.querySelectorAll('.side-thumb').forEach(t => t.classList.remove('active'));
+  document.getElementById(`thumb-${num}`).classList.add('active');
+
+  const page = await pdfJsDoc.getPage(num);
+  const canvas = document.getElementById('pdfCanvas');
+  const context = canvas.getContext('2d');
+  
+  const container = document.querySelector('.canvas-container');
+  const containerWidth = container.clientWidth - 80;
+  const containerHeight = container.clientHeight - 80;
+  
+  const unscaledVp = page.getViewport({ scale: 1.0 });
+  const fitScale = Math.min(containerWidth / unscaledVp.width, containerHeight / unscaledVp.height);
+  
+  const vp = page.getViewport({ scale: fitScale });
+  canvas.width = vp.width; canvas.height = vp.height;
+  baseCanvasSize = { w: vp.width, h: vp.height };
+
+  await page.render({ canvasContext: context, viewport: vp }).promise;
+
+  if (cropper) cropper.destroy();
+  cropper = new Cropper(canvas, {
+    viewMode: 1,
+    background: false,
+    autoCropArea: pageCrops[num] ? 0 : 0.9,
+    ready() { if (pageCrops[num]) cropper.setData(pageCrops[num]); }
+  });
+  
+  resetZoom();
+}
+
+function adjustZoom(delta) {
+  currentScale = Math.min(Math.max(0.5, currentScale + delta), 3.0);
+  updateZoomUI();
+}
+
+function resetZoom() {
+  currentScale = 1.0;
+  updateZoomUI();
+}
+
+function updateZoomUI() {
+  const wrapper = document.getElementById('canvasWrapper');
+  wrapper.style.transform = `scale(${currentScale})`;
+  document.getElementById('zoomVal').textContent = Math.round(currentScale * 100) + '%';
+}
+
+function applyToAll() {
+  const data = cropper.getData();
+  for (let i = 1; i <= pdfJsDoc.numPages; i++) {
+    pageCrops[i] = { ...data };
+    document.getElementById(`thumb-${i}`).classList.add('has-crop');
+  }
+  showToast("Applied to all pages!", "success");
+}
+
+async function generateFinalPDF() {
+  if (cropper) pageCrops[currentPage] = cropper.getData();
+  showToast("Saving PDF... please wait", "");
+  const btn = document.getElementById('btnCrop');
+  btn.disabled = true;
+
+  try {
+    const pdfLibDoc = await PDFLib.PDFDocument.load(pdfBytes);
+    const pages = pdfLibDoc.getPages();
+
+    pages.forEach((page, i) => {
+      const crop = pageCrops[i + 1];
+      if (crop) {
+        const { width: pW, height: pH } = page.getSize();
+        const scaleX = pW / baseCanvasSize.w;
+        const scaleY = pH / baseCanvasSize.h;
+
+        const cW = Math.max(1, Math.min(crop.width * scaleX, pW));
+        const cH = Math.max(1, Math.min(crop.height * scaleY, pH));
+        const cX = Math.max(0, Math.min(crop.x * scaleX, pW - cW));
+        const cY = Math.max(0, Math.min(pH - (crop.y * scaleY) - cH, pH - cH));
+
+        page.setCropBox(cX, cY, cW, cH);
+      }
+    });
+
+    const finalBytes = await pdfLibDoc.save();
+    const blob = new Blob([finalBytes], { type: "application/pdf" });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = "cropped_" + document.getElementById('fileNameBadge').textContent;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    showToast("Download started!", "success");
+  } catch (e) {
+    console.error(e);
+    showToast("Download failed.", "error");
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+function showToast(msg, type) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.className = 'toast show' + (type ? ' ' + type : '');
+  setTimeout(() => t.classList.remove('show'), 4000);
+}
+</script>
+</body>
+</html>

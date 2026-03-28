@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Photo & Sign Compressor — Convertkaro.in</title>
+<meta name="description" content="Crop, resize, and compress passport photos or signatures to exact KB size for online forms.">
+<link rel="icon" type="image/x-icon" href="favicon.ico">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+
+<link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+
+<style>
+/* ── UI/UX FRAMEWORK ── */
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+:root { --bg: #f8f7f4; --white: #ffffff; --red: #e02b20; --red-hover: #c4231a; --red-light: rgba(224,43,32,0.07); --ink: #141414; --ink-2: #3d3d3d; --ink-3: #888; --border: #e4e2dc; --success: #2d8a4e; }
+body { background: var(--bg); color: var(--ink); font-family: 'Plus Jakarta Sans', sans-serif; -webkit-font-smoothing: antialiased; overflow-x: hidden;}
+
+/* ── LAYOUT ── */
+.container-1140 { max-width: 1140px; margin: 0 auto; padding: 0 48px; width: 100%; box-sizing: border-box; }
+
+/* ── NAV BAR ── */
+nav { position: fixed; top:0; left:0; right:0; z-index:100; height:68px; background:rgba(248,247,244,0.92); backdrop-filter:blur(20px); border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; padding:0 48px; }
+.logo { display:flex; align-items:center; gap:9px; text-decoration:none; } 
+.logo-mark img { width:32px; height:32px; object-fit:cover; border-radius:8px; }
+.logo-name { font-size:17px; font-weight:700; color:var(--ink); letter-spacing:-0.4px; } 
+.logo-name span { color:var(--red); }
+.nav-links { display:flex; gap:32px; list-style:none; } 
+.nav-links a { font-size:14px; font-weight:500; color:var(--ink-3); text-decoration:none; transition:color .2s; }
+.nav-links a:hover { color:var(--ink); }
+.nav-cta { background:var(--red); color:#fff; font-size:13px; font-weight:700; padding:10px 20px; border-radius:10px; cursor:pointer; text-decoration:none; transition: 0.2s; border:none; display:inline-flex; align-items:center;}
+.nav-cta:hover { background:var(--red-hover); transform:translateY(-1px); }
+
+/* ── HERO SECTION (LEFT ALIGNED) ── */
+.breadcrumb { padding-top: 100px; display: flex; align-items: center; justify-content: flex-start; gap: 8px; font-size: 13px; color: var(--ink-3); }
+.breadcrumb a { color: var(--ink-3); text-decoration: none; transition: 0.2s; }
+.breadcrumb a:hover { color: var(--red); }
+.breadcrumb strong { color: var(--ink-2); font-weight: 600; }
+
+.page-hero { padding: 24px 0 48px; display: flex; align-items: center; gap: 24px; text-align: left; }
+.tool-icon-big { width: 72px; height: 72px; border-radius: 18px; background: var(--red-light); border: 1.5px solid rgba(224,43,32,0.2); display: grid; place-items: center; font-size: 34px; flex-shrink: 0; }
+.page-hero-text { display: flex; flex-direction: column; }
+.student-badge-hero { display:inline-block; background:#fff2e5; color:#e67300; font-size:12px; font-weight:700; padding:4px 10px; border-radius:6px; margin-bottom:8px; border:1px solid #ffcc99; width: fit-content;}
+.page-title { font-size: 38px; font-weight: 800; letter-spacing: -1px; color: var(--ink); margin-bottom: 8px; } 
+.page-title .serif { font-family:'Instrument Serif',serif; font-style:italic; font-weight:400; color:var(--red); }
+.page-sub { font-size:16px; color:var(--ink-3); max-width: 580px; line-height: 1.5; margin: 0; }
+
+/* ── UPLOAD ZONE (FULL WIDTH ALIGNED) ── */
+.main-content { padding-bottom: 80px; }
+input[type="file"] { display:none; }
+.upload-zone { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 70px 40px; text-align: center; cursor: pointer; background: var(--white); border: 2px dashed var(--border); border-radius: 24px; transition: 0.2s; width: 100%; margin-bottom: 48px; box-shadow: 0 10px 40px rgba(0,0,0,0.02);}
+.upload-zone:hover { border-color: var(--red); background: var(--red-light); }
+.uz-icon { font-size:40px; margin-bottom:16px; }
+.uz-title { font-size:20px; font-weight:700; color:var(--ink); margin-bottom:8px; }
+.uz-sub { font-size:14px; color:var(--ink-3); margin-bottom:24px; }
+.uz-btn { background:var(--red); color:#fff; font-size:14px; font-weight:700; padding:12px 28px; border-radius:12px; pointer-events: none; }
+
+/* ── WORKSPACE ── */
+.editor-zone { display: none; margin-bottom: 48px;}
+.editor-zone.active { display: block; }
+.editor-split { display: grid; grid-template-columns: 340px 1fr; gap: 24px; align-items: start; width: 100%; }
+
+.editor-sidebar { background: var(--white); border: 1px solid var(--border); border-radius: 16px; padding: 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.02); }
+.editor-main { background: var(--white); border: 1px solid var(--border); border-radius: 16px; padding: 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.02); }
+
+.panel-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 16px; margin-bottom: 24px; }
+.panel-header h3 { font-size: 16px; font-weight: 800; color: var(--ink); margin: 0; }
+
+.btn-crop-manual { background: transparent; border: 1.5px solid var(--border); color: var(--ink); padding: 8px 14px; font-size: 12px; font-weight: 700; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 5px; transition: 0.2s; font-family: inherit;}
+.btn-crop-manual:hover { border-color: var(--ink); }
+.btn-text-close { background: transparent; color: var(--red); border: none; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit;}
+
+/* Left Settings Panel */
+.sg-box { margin-bottom: 24px; }
+.sg-label { display: block; font-size: 13px; font-weight: 700; color: var(--ink-2); margin-bottom: 10px; }
+.sg-hint { font-size: 11px; color: var(--ink-3); margin-top: 8px; }
+
+.wh-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.wh-input { width: 100%; padding: 12px; text-align: center; background: var(--white); border: 1.5px solid var(--border); border-radius: 10px; font-family: inherit; font-size: 14px; font-weight: 600; color: var(--ink); outline: none; transition: border-color .2s; }
+.wh-input:focus { border-color: var(--ink); }
+
+.size-display-wrap { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.target-size-val { font-size: 14px; font-weight: 800; color: var(--red); }
+
+input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; margin-bottom: 6px; }
+input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 16px; width: 16px; border-radius: 50%; background: var(--red); cursor: pointer; margin-top: -6px; box-shadow: 0 2px 6px rgba(224,43,32,0.4); }
+input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 4px; cursor: pointer; background: var(--border); border-radius: 2px; }
+
+.btn-green-full { width: 100%; background: #2d8a4e; color: #fff; padding: 16px; border-radius: 10px; border: none; font-size: 15px; font-weight: 800; font-family: inherit; cursor: pointer; margin-top: 8px; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px;}
+.btn-green-full:hover { background: #236e3d; transform: translateY(-2px); box-shadow: 0 8px 24px rgba(45,138,78,0.25); }
+
+/* Right Live Preview Panel */
+.live-preview-box { background: var(--bg); border: 1.5px dashed var(--border); border-radius: 12px; padding: 40px; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 400px; }
+.preview-img { max-width: 100%; max-height: 350px; border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); margin-bottom: 24px; }
+.kb-pill { background: #141414; color: #fff; font-size: 14px; font-weight: 800; padding: 8px 20px; border-radius: 999px; letter-spacing: 0.02em;}
+
+/* Crop Modal */
+.crop-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 9999; display: none; flex-direction: column; align-items: center; justify-content: center; padding: 24px; backdrop-filter: blur(5px); }
+.crop-modal.active { display: flex; }
+.crop-title { color: #fff; font-size: 18px; font-weight: 700; margin-bottom: 24px; }
+.crop-area-wrap { width: 100%; max-width: 700px; height: 450px; background: transparent; margin-bottom: 24px; border-radius: 12px; overflow: hidden;}
+.crop-actions { display: flex; gap: 16px; }
+.btn-modal-cancel { background: #fff; color: #141414; border: none; padding: 12px 32px; border-radius: 10px; font-size: 14px; font-weight: 700; font-family: inherit; cursor: pointer; transition: 0.2s;}
+.btn-modal-cancel:hover { background: #eee; }
+.btn-modal-apply { background: #2d8a4e; color: #fff; border: none; padding: 12px 32px; border-radius: 10px; font-size: 14px; font-weight: 700; font-family: inherit; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: 0.2s;}
+.btn-modal-apply:hover { background: #236e3d; }
+
+/* ── OTHER TOOLS & HOW TO ── */
+.other-tools { margin-bottom:48px; }
+.other-title { font-size:20px; font-weight:800; letter-spacing:-0.5px; color:var(--ink); margin-bottom:20px; }
+.tools-mini-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; }
+.mini-card { background:var(--white); border:1px solid var(--border); border-radius:16px; padding:20px; text-decoration:none; display:block; transition:all .25s; box-sizing: border-box; }
+.mini-card:hover { border-color:var(--red); transform:translateY(-3px); box-shadow:0 8px 24px rgba(224,43,32,0.08); }
+.mini-icon { font-size:24px; margin-bottom:12px; }
+.mini-name { font-size:15px; font-weight:800; color:var(--ink); margin-bottom:6px; letter-spacing:-0.2px; }
+.mini-desc { font-size:13px; color:var(--ink-3); line-height:1.4; margin: 0; }
+
+.how-section { background:var(--white); border:1px solid var(--border); border-radius:20px; padding:40px 48px; margin-bottom:48px; box-sizing: border-box; }
+.how-title { font-size:22px; font-weight:800; letter-spacing:-0.5px; color:var(--ink); margin-bottom:32px; }
+.how-title .serif { font-family:'Instrument Serif',serif; font-style:italic; font-weight:400; color:var(--red); }
+.how-steps { display:grid; grid-template-columns:repeat(3,1fr); gap:32px; }
+.how-step { text-align:center; }
+.how-num { width:44px; height:44px; border-radius:12px; background:var(--red-light); border:1.5px solid rgba(224,43,32,.2); display:grid; place-items:center; margin:0 auto 16px; font-family:'Instrument Serif',serif; font-style:italic; font-size:20px; color:var(--red); }
+.how-step-title { font-size:15px; font-weight:800; color:var(--ink); margin-bottom:8px; }
+.how-step-desc { font-size:13px; color:var(--ink-3); line-height:1.6; margin: 0; }
+
+/* ── FOOTER ── */
+footer { border-top:1px solid var(--border); background:var(--white); padding:32px 48px; display:flex; justify-content:space-between; align-items:center; }
+.ft-copy { font-size:13px; color:var(--ink-3); }
+.ft-india { font-size:13px; color:var(--ink-3); font-weight:500; }
+.ft-india span { color:var(--red); }
+
+@media(max-width:768px){ 
+  .breadcrumb, .page-hero, .main-content { padding-left: 20px; padding-right: 20px; }
+  nav, footer { padding: 0 20px; }
+  .nav-links { display: none; }
+  .editor-split { grid-template-columns: 1fr; }
+  .page-title { font-size: 28px; }
+  .tools-mini-grid { grid-template-columns:repeat(2,1fr); }
+  .how-steps { grid-template-columns:1fr; }
+  footer { flex-direction:column-reverse; gap:12px; text-align:center;}
+}
+</style>
+</head>
+<body>
+
+<input type="file" id="fileInput" accept="image/jpeg, image/png, image/webp" style="display: none;" onchange="handleFileSelect(this)">
+
+<nav>
+  <a href="index.html" class="logo">
+    <div class="logo-mark"><img src="favicon.ico" alt="Convertkaro"></div>
+    <div class="logo-name">Convertkaro<span>.in</span></div>
+  </a>
+  <ul class="nav-links">
+    <li><a href="index.html#tools">Tools</a></li>
+    <li><a href="index.html#how">How it works</a></li> 
+    <li><a href="index.html#about">About</a></li>
+  </ul>
+  <label for="fileInput" class="nav-cta" style="cursor:pointer;">Upload Photo</label>
+</nav>
+
+<div class="breadcrumb container-1140">
+  <a href="index.html">Home</a> <span>›</span> <a href="index.html#tools">All Tools</a> <span>›</span> <strong>Photo Compressor</strong>
+</div>
+
+<header class="page-hero container-1140">
+  <div class="tool-icon-big">📸</div>
+  <div class="page-hero-text">
+    <div class="student-badge-hero">👨‍🎓 Govt. Job & College Forms</div>
+    <h1 class="page-title">Photo & Sign <span class="serif">Compressor</span></h1>
+    <p class="page-sub">Crop, resize, and compress passport photos or signatures to exact KB size for online forms.</p>
+  </div>
+</header>
+
+<main class="main-content">
+  
+  <div class="container-1140">
+    <label for="fileInput" class="upload-zone" id="uploadZone">
+      <div class="uz-icon">📸</div>
+      <div class="uz-title">Upload Photo or Signature</div>
+      <div class="uz-sub">Accepts JPG, PNG, WEBP files</div>
+      <div class="uz-btn">Choose Image</div>
+      <div class="uz-disclaimer" style="margin-top: 16px; font-size: 12px; color: var(--ink-3);">🔒 Processed locally. Your files stay on your device.</div>
+    </label>
+
+    <div class="editor-zone" id="editorZone">
+      <div class="editor-split">
+        
+        <div class="editor-sidebar">
+          <div class="panel-header">
+            <h3>Fix Settings</h3>
+            <button class="btn-crop-manual" onclick="openCropModal()">✂️ Crop Manual</button>
+          </div>
+
+          <div class="sg-box">
+            <label class="sg-label">Width & Height (Pixels)</label>
+            <div class="wh-grid">
+              <input type="number" id="inputWidth" class="wh-input" placeholder="Width" onchange="applyDimensions()">
+              <input type="number" id="inputHeight" class="wh-input" placeholder="Height" onchange="applyDimensions()">
+            </div>
+            <div class="sg-hint">Standard Passport: 350 x 450 | Sign: 250 x 100</div>
+          </div>
+
+          <div class="sg-box" style="margin-top: 32px;">
+            <div class="size-display-wrap">
+              <span class="sg-label" style="margin:0;">Target Size (Compression)</span>
+              <span class="target-size-val"><span id="targetKBLabel">50.0</span> KB</span>
+            </div>
+            <input type="range" id="kbSlider" min="10" max="500" value="50" oninput="updateSliderLabel(this.value)" onchange="processLivePreview()">
+            <div class="sg-hint">Slide left for lower KB (decreases quality)</div>
+          </div>
+
+          <button class="btn-green-full" onclick="downloadFinalImage()">
+            ⬇ Download Final JPG
+          </button>
+        </div>
+
+        <div class="editor-main">
+          <div class="panel-header">
+            <h3>Live Preview</h3>
+            <button class="btn-text-close" onclick="resetCompressor()">✕ Close</button>
+          </div>
+
+          <div class="live-preview-box">
+            <img id="livePreviewImg" class="preview-img" src="" alt="Live Preview">
+            <div class="kb-pill"><span id="liveKBPill">--</span> KB</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <div class="other-tools container-1140">
+    <div class="other-title">Other free tools</div>
+    <div class="tools-mini-grid">
+      <a href="merge-pdf.html" class="mini-card"><div class="mini-icon">🔗</div><div class="mini-name">Merge PDF</div><div class="mini-desc">Combine multiple PDFs</div></a>
+      <a href="split-pdf.html" class="mini-card"><div class="mini-icon">✂️</div><div class="mini-name">Split PDF</div><div class="mini-desc">Break PDF into separate files</div></a>
+      <a href="compress-pdf.html" class="mini-card"><div class="mini-icon">📦</div><div class="mini-name">Compress PDF</div><div class="mini-desc">Reduce PDF file size</div></a>
+      <a href="protect-pdf.html" class="mini-card"><div class="mini-icon">🔒</div><div class="mini-name">Protect PDF</div><div class="mini-desc">Add a password to your PDF</div></a>
+    </div>
+  </div>
+
+  <div class="how-section container-1140">
+    <div class="how-title">How to use <span class="serif">Photo Compressor</span></div>
+    <div class="how-steps">
+      <div class="how-step">
+        <div class="how-num">1</div>
+        <div class="how-step-title">Upload Image</div>
+        <div class="how-step-desc">Select your photo or signature image from your device.</div>
+      </div>
+      <div class="how-step">
+        <div class="how-num">2</div>
+        <div class="how-step-title">Crop & Resize</div>
+        <div class="how-step-desc">Use the manual crop tool and set exact dimensions (e.g. 350x450). Slide to set target KB size.</div>
+      </div>
+      <div class="how-step">
+        <div class="how-num">3</div>
+        <div class="how-step-title">Download Result</div>
+        <div class="how-step-desc">Check the live preview and instantly download your perfectly sized JPG.</div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<div class="crop-modal" id="cropModal">
+  <div class="crop-title">Drag the corners to crop your image</div>
+  <div class="crop-area-wrap">
+    <img id="modalCropImg" src="" style="max-width: 100%; display: block;">
+  </div>
+  <div class="crop-actions">
+    <button class="btn-modal-cancel" onclick="closeCropModal()">Cancel</button>
+    <button class="btn-modal-apply" onclick="applyCropModal()">✅ Apply Crop</button>
+  </div>
+</div>
+
+<footer>
+  <div class="ft-copy">© 2026 Convertkaro.in — All rights reserved.</div>
+  <div class="ft-india">Made with <span>♥</span> in India 🇮🇳</div>
+</footer>
+
+<script>
+// ── COMPRESSOR LOGIC ──
+let cropperInstance = null;
+let originalFileName = '';
+let currentRawCanvas = null; // Holds the uncompressed, unscaled (but cropped) master canvas
+let finalDownloadUrl = '';
+
+function handleFileSelect(input) {
+  if (input.files && input.files[0]) {
+    const file = input.files[0];
+    originalFileName = file.name;
+    const reader = new FileReader();
+    
+    reader.onload = function(e) {
+      document.getElementById('uploadZone').style.display = 'none';
+      document.getElementById('editorZone').classList.add('active');
+      
+      const img = new Image();
+      img.onload = function() {
+        // Save initial full image to a canvas
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0);
+        
+        currentRawCanvas = canvas;
+        
+        // Update input boxes
+        document.getElementById('inputWidth').value = img.width;
+        document.getElementById('inputHeight').value = img.height;
+        
+        // Process preview
+        processLivePreview();
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
+}
+
+function resetCompressor() {
+  document.getElementById('fileInput').value = "";
+  document.getElementById('uploadZone').style.display = 'flex';
+  document.getElementById('editorZone').classList.remove('active');
+  currentRawCanvas = null;
+  finalDownloadUrl = '';
+}
+
+function updateSliderLabel(val) {
+  document.getElementById('targetKBLabel').innerText = parseFloat(val).toFixed(1);
+}
+
+// Updates master canvas when W/H inputs are manually changed
+function applyDimensions() {
+  if(!currentRawCanvas) return;
+  const newW = parseInt(document.getElementById('inputWidth').value);
+  const newH = parseInt(document.getElementById('inputHeight').value);
+  
+  if(!newW || !newH) return;
+
+  const tempCanvas = document.createElement('canvas');
+  tempCanvas.width = newW;
+  tempCanvas.height = newH;
+  const ctx = tempCanvas.getContext('2d');
+  
+  // Draw stretched to new dimensions
+  ctx.drawImage(currentRawCanvas, 0, 0, newW, newH);
+  currentRawCanvas = tempCanvas;
+  
+  processLivePreview();
+}
+
+// ── CROP MODAL LOGIC ──
+function openCropModal() {
+  if(!currentRawCanvas) return;
+  const modal = document.getElementById('cropModal');
+  const modalImg = document.getElementById('modalCropImg');
+  
+  // Load current canvas into cropper
+  modalImg.src = currentRawCanvas.toDataURL('image/png');
+  modal.classList.add('active');
+  
+  if(cropperInstance) cropperInstance.destroy();
+  cropperInstance = new Cropper(modalImg, {
+    viewMode: 2,
+    autoCropArea: 0.8,
+  });
+}
+
+function closeCropModal() {
+  document.getElementById('cropModal').classList.remove('active');
+  if(cropperInstance) cropperInstance.destroy();
+}
+
+function applyCropModal() {
+  if(!cropperInstance) return;
+  
+  // Get cropped area
+  const croppedCanvas = cropperInstance.getCroppedCanvas();
+  currentRawCanvas = croppedCanvas;
+  
+  // Update inputs
+  document.getElementById('inputWidth').value = croppedCanvas.width;
+  document.getElementById('inputHeight').value = croppedCanvas.height;
+  
+  closeCropModal();
+  processLivePreview();
+}
+
+// ── LIVE COMPRESSION LOGIC ──
+function processLivePreview() {
+  if(!currentRawCanvas) return;
+
+  const targetKB = parseFloat(document.getElementById('kbSlider').value);
+  const targetBytes = targetKB * 1024;
+  
+  let quality = 0.9;
+  let resultDataUrl = currentRawCanvas.toDataURL('image/jpeg', quality);
+  let blob = dataURLtoBlob(resultDataUrl);
+  
+  // Binary search for JPG compression
+  let minQ = 0.05, maxQ = 1.0;
+  for (let i = 0; i < 7; i++) {
+    if (blob.size <= targetBytes && blob.size > targetBytes * 0.9) break;
+    if (blob.size > targetBytes) maxQ = quality;
+    else minQ = quality;
+    
+    quality = (minQ + maxQ) / 2;
+    resultDataUrl = currentRawCanvas.toDataURL('image/jpeg', quality);
+    blob = dataURLtoBlob(resultDataUrl);
+  }
+
+  // If still too big, scale down resolution slightly (Fallback)
+  if (blob.size > targetBytes) {
+      let scale = Math.sqrt(targetBytes / blob.size);
+      const scaledCanvas = document.createElement('canvas');
+      scaledCanvas.width = currentRawCanvas.width * scale;
+      scaledCanvas.height = currentRawCanvas.height * scale;
+      const ctx = scaledCanvas.getContext('2d');
+      ctx.drawImage(currentRawCanvas, 0, 0, scaledCanvas.width, scaledCanvas.height);
+      resultDataUrl = scaledCanvas.toDataURL('image/jpeg', 0.7);
+      blob = dataURLtoBlob(resultDataUrl);
+  }
+
+  // Update UI
+  const finalKB = (blob.size / 1024).toFixed(1);
+  document.getElementById('livePreviewImg').src = resultDataUrl;
+  document.getElementById('liveKBPill').innerText = finalKB;
+  
+  // Store for download button
+  finalDownloadUrl = resultDataUrl;
+}
+
+function downloadFinalImage() {
+  if(!finalDownloadUrl) return;
+  const link = document.createElement('a');
+  link.href = finalDownloadUrl;
+  const newName = originalFileName.split('.')[0] + `_Convertkaro.jpg`;
+  link.download = newName;
+  link.click();
+}
+
+function dataURLtoBlob(dataurl) {
+  var arr = dataurl.split(','), mime = arr[0].match(/:(.*?);/)[1],
+      bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n);
+  while(n--){ u8arr[n] = bstr.charCodeAt(n); }
+  return new Blob([u8arr], {type:mime});
+}
+</script>
+</body>
+</html>

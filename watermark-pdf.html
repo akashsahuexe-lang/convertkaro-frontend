@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Watermark your PDF — Convertkaro.in</title>
+<meta name="description" content="Add multiple custom text watermarks to your PDF files. Drag, drop, rotate, and resize instantly.">
+<link rel="icon" type="image/x-icon" href="favicon.ico">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+
+<script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+<script>
+  pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+</script>
+
+<style>
+/* ── UI/UX FRAMEWORK ── */
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+:root { --bg: #f8f7f4; --white: #ffffff; --red: #e02b20; --red-hover: #c4231a; --red-light: rgba(224,43,32,0.07); --ink: #141414; --ink-2: #3d3d3d; --ink-3: #888; --border: #e4e2dc; --success: #2d8a4e; }
+body { background: var(--bg); color: var(--ink); font-family: 'Plus Jakarta Sans', sans-serif; -webkit-font-smoothing: antialiased; overflow-x: hidden;}
+
+/* ── STRICT GRID SYSTEM (MATCHING COMPRESS PDF) ── */
+.breadcrumb, .page-hero, .main { max-width: 1140px; margin: 0 auto; padding-left: 48px; padding-right: 48px; width: 100%; box-sizing: border-box; }
+
+/* ── NAV BAR ── */
+nav { position: fixed; top:0; left:0; right:0; z-index:100; height:68px; background:rgba(248,247,244,0.92); backdrop-filter:blur(20px); border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; padding:0 48px; }
+.logo { display:flex; align-items:center; gap:9px; text-decoration:none; } 
+.logo-mark img { width:32px; height:32px; object-fit:cover; border-radius:8px; }
+.logo-name { font-size:17px; font-weight:700; color:var(--ink); letter-spacing:-0.4px; } 
+.logo-name span { color:var(--red); }
+.nav-links { display:flex; gap:32px; list-style:none; } 
+.nav-links a { font-size:14px; font-weight:500; color:var(--ink-3); text-decoration:none; transition:color .2s; }
+.nav-links a:hover { color:var(--ink); }
+.nav-cta { background:var(--red); color:#fff; font-size:13px; font-weight:700; padding:10px 20px; border-radius:10px; cursor:pointer; text-decoration:none; transition: 0.2s; border:none; display:inline-flex; align-items:center;}
+.nav-cta:hover { background:var(--red-hover); transform:translateY(-1px); }
+
+/* ── HERO SECTION (LEFT ALIGNED) ── */
+.breadcrumb { padding-top: 88px; display: flex; align-items: center; justify-content: flex-start; gap: 8px; font-size: 13px; color: var(--ink-3); }
+.breadcrumb a { color: var(--ink-3); text-decoration: none; transition: 0.2s; }
+.breadcrumb a:hover { color: var(--red); }
+.breadcrumb strong { color: var(--ink-2); font-weight: 600; }
+
+.page-hero { padding-top: 32px; padding-bottom: 40px; display: flex; align-items: center; gap: 20px; text-align: left; }
+.tool-icon-big { width: 64px; height: 64px; border-radius: 18px; background: var(--red-light); border: 1.5px solid rgba(224,43,32,0.2); display: grid; place-items: center; font-size: 30px; flex-shrink: 0; }
+.page-hero-text { display: flex; flex-direction: column; }
+.page-title { font-size: clamp(26px, 4vw, 38px); font-weight: 800; letter-spacing: -1px; color: var(--ink); margin-bottom: 6px; line-height: 1.1;} 
+.page-title .serif { font-family:'Instrument Serif',serif; font-style:italic; font-weight:400; color:var(--red); }
+.page-sub { font-size:15px; color:var(--ink-3); max-width: 580px; line-height: 1.5; margin: 0; }
+
+/* ── UPLOAD ZONE ── */
+.main { padding-bottom: 80px; }
+input[type="file"] { display:none; }
+.upload-zone { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 60px 40px; text-align: center; cursor: pointer; background: var(--white); border: 2px dashed var(--border); border-radius: 20px; transition: 0.2s; width: 100%; margin-bottom: 32px; box-shadow: 0 10px 40px rgba(0,0,0,0.02); box-sizing: border-box; }
+.upload-zone:hover { border-color: var(--red); background: var(--red-light); }
+.uz-icon { font-size:40px; margin-bottom:16px; }
+.uz-title { font-size:18px; font-weight:700; color:var(--ink); margin-bottom:6px; }
+.uz-sub { font-size:14px; color:var(--ink-3); margin-bottom:24px; }
+.uz-btn { background:var(--red); color:#fff; font-size:14px; font-weight:700; padding:12px 28px; border-radius:10px; pointer-events: none; display: inline-block;}
+.uz-disclaimer { font-size:12px; color:var(--ink-3); margin-top:16px; font-weight:500; display:flex; align-items:center; gap:6px; }
+
+/* ── WORKSPACE ── */
+.workspace { display:none; gap:24px; grid-template-columns: 340px 1fr; margin-bottom: 48px; width: 100%; box-sizing: border-box;}
+.workspace.active { display:grid; }
+.panel { background:var(--white); border:1px solid var(--border); border-radius:20px; padding:24px; box-shadow: 0 4px 20px rgba(0,0,0,0.02);}
+.panel-title { font-size:15px; font-weight:800; text-transform:uppercase; letter-spacing:0.5px; color:var(--ink-2); margin-bottom:20px; padding-bottom:12px; border-bottom:1px solid var(--border); }
+
+/* Controls */
+.control-item { margin-bottom: 20px; }
+.control-item label { display: block; font-size: 13px; font-weight: 700; margin-bottom: 8px; color: var(--ink-2); }
+.input-text { width: 100%; padding: 12px; border: 1.5px solid var(--border); border-radius: 10px; font-family: inherit; font-weight: 600; color: var(--ink); outline:none; transition: 0.2s;}
+.input-text:focus { border-color: var(--red); }
+.range-input { width: 100%; accent-color: var(--red); cursor: pointer; }
+.download-btn { width: 100%; background: var(--success); color: white; padding: 16px; border-radius: 12px; font-weight: 800; border: none; cursor: pointer; margin-top: 10px; font-size: 15px; font-family: inherit; transition: 0.2s;}
+.download-btn:hover { background: #236e3d; transform:translateY(-2px); box-shadow: 0 8px 24px rgba(45,138,78,0.25); }
+
+/* Preview Box & Multi-Watermark */
+.preview-box { background: var(--bg); border-radius: 12px; min-height: 500px; display: flex; align-items: center; justify-content: center; position: relative; overflow: auto; border: 1.5px dashed var(--border); padding: 20px;}
+.canvas-container { position: relative; background: white; box-shadow: 0 10px 30px rgba(0,0,0,0.1); line-height: 0; display: inline-block;}
+#pdfCanvas { max-width: 100%; height: auto; display: block; }
+
+.wmOverlay { position: absolute; cursor: move; user-select: none; font-weight: 800; white-space: nowrap; padding: 5px; border: 2px dashed transparent; z-index: 10; font-family: 'Helvetica', sans-serif;}
+.wmOverlay:hover { border-color: rgba(224,43,32,0.3); }
+.wmOverlay.active-wm { border-color: var(--red); z-index: 20; background: rgba(255,255,255,0.2); border-radius: 4px; box-shadow: 0 4px 12px rgba(0,0,0,0.05);}
+
+/* ── OTHER TOOLS & HOW TO ── */
+.other-tools { margin-bottom:48px; width: 100%; box-sizing: border-box;}
+.other-title { font-size:20px; font-weight:800; letter-spacing:-0.5px; color:var(--ink); margin-bottom:20px; }
+.tools-mini-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; }
+.mini-card { background:var(--white); border:1px solid var(--border); border-radius:16px; padding:20px; text-decoration:none; display:block; transition:all .25s; box-sizing: border-box; }
+.mini-card:hover { border-color:var(--red); transform:translateY(-3px); box-shadow:0 8px 24px rgba(224,43,32,0.08); }
+.mini-icon { font-size:24px; margin-bottom:12px; }
+.mini-name { font-size:15px; font-weight:800; color:var(--ink); margin-bottom:6px; letter-spacing:-0.2px; }
+.mini-desc { font-size:13px; color:var(--ink-3); line-height:1.4; margin: 0; }
+
+.how-section { background:var(--white); border:1px solid var(--border); border-radius:20px; padding:40px 48px; margin-bottom:48px; box-sizing: border-box; width: 100%;}
+.how-title { font-size:22px; font-weight:800; letter-spacing:-0.5px; color:var(--ink); margin-bottom:32px; }
+.how-title .serif { font-family:'Instrument Serif',serif; font-style:italic; font-weight:400; color:var(--red); }
+.how-steps { display:grid; grid-template-columns:repeat(3,1fr); gap:32px; }
+.how-step { text-align:center; }
+.how-num { width:44px; height:44px; border-radius:12px; background:var(--red-light); border:1.5px solid rgba(224,43,32,.2); display:grid; place-items:center; margin:0 auto 16px; font-family:'Instrument Serif',serif; font-style:italic; font-size:20px; color:var(--red); }
+.how-step-title { font-size:15px; font-weight:800; color:var(--ink); margin-bottom:8px; }
+.how-step-desc { font-size:13px; color:var(--ink-3); line-height:1.6; margin: 0; }
+
+/* ── FOOTER ── */
+footer { border-top:1px solid var(--border); background:var(--white); padding:32px 48px; display:flex; justify-content:space-between; align-items:center; width: 100%; box-sizing: border-box;}
+.ft-copy { font-size:13px; color:var(--ink-3); }
+.ft-india { font-size:13px; color:var(--ink-3); font-weight:500; }
+.ft-india span { color:var(--red); }
+
+@media(max-width:768px){ 
+  .breadcrumb, .page-hero, .main { padding-left: 20px; padding-right: 20px; }
+  nav, footer { padding: 0 20px; }
+  .nav-links { display: none; }
+  .workspace.active { grid-template-columns: 1fr; }
+  .tools-mini-grid { grid-template-columns:repeat(2,1fr); }
+  .how-steps { grid-template-columns:1fr; }
+  footer { flex-direction:column; gap:12px; text-align:center;}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="logo">
+    <div class="logo-mark"><img src="favicon.ico" alt="Convertkaro"></div>
+    <div class="logo-name">Convertkaro<span>.in</span></div>
+  </a>
+  <ul class="nav-links">
+    <li><a href="index.html#tools">Tools</a></li>
+    <li><a href="index.html#how">How it works</a></li> 
+    <li><a href="index.html#about">About</a></li>
+  </ul>
+  <label for="fileInput" class="nav-cta" style="cursor:pointer;">Upload PDF & Watermark</label>
+</nav>
+
+<div class="breadcrumb">
+  <a href="index.html">Home</a> <span>›</span> <a href="index.html#tools">All Tools</a> <span>›</span> <strong>Watermark PDF</strong>
+</div>
+
+<div class="page-hero">
+  <div class="tool-icon-big">💧</div>
+  <div class="page-hero-text">
+    <h1 class="page-title">Watermark <span class="serif">your PDF</span></h1>
+    <p class="page-sub">Professionally add multiple text watermarks to your PDF. Drag to position, rotate, and adjust opacity in real-time.</p>
+  </div>
+</div>
+
+<div class="main">
+  <input type="file" id="fileInput" accept=".pdf" onchange="handleFile(this.files[0])">
+  
+  <label class="upload-zone" id="uploadZone" for="fileInput">
+    <div class="uz-icon">📄</div>
+    <div class="uz-title">Drop your PDF here</div>
+    <p class="uz-sub">or click to choose a file from your device</p>
+    <div class="uz-btn">Choose PDF File</div>
+    <div class="uz-disclaimer">
+      <span>🔒</span> Your file never leaves your device — 100% private
+    </div>
+  </label>
+
+  <div class="workspace" id="workspace">
+    <aside class="panel">
+      <div class="panel-title" style="display:flex; justify-content:space-between; align-items:center;">
+        <span>Settings</span>
+        <div style="display:flex; gap:6px;">
+          <button onclick="addWatermark()" style="background:var(--ink); color:#fff; border:none; padding:6px 10px; border-radius:6px; font-size:12px; font-weight:700; cursor:pointer; font-family:inherit;">+ Add New</button>
+          <button onclick="deleteActive()" style="background:rgba(224,43,32,0.1); color:var(--red); border:none; padding:6px 10px; border-radius:6px; font-size:12px; font-weight:700; cursor:pointer; font-family:inherit;">🗑️ Delete</button>
+        </div>
+      </div>
+
+      <button onclick="snapToCenter()" style="width:100%; margin-bottom:20px; background:transparent; border:1.5px dashed var(--border); padding:10px; border-radius:10px; font-weight:600; cursor:pointer; font-size:13px; font-family:inherit; transition:0.2s;" onmouseover="this.style.borderColor='var(--red)'" onmouseout="this.style.borderColor='var(--border)'">🎯 Snap to Center</button>
+      
+      <div class="control-item">
+        <label>Watermark Text</label>
+        <input type="text" id="wmText" class="input-text" value="CONFIDENTIAL" oninput="updateUI()">
+      </div>
+
+      <div class="control-item">
+        <label>Text Size (<span id="v-size">60</span>px)</label>
+        <input type="range" id="sizeSlider" class="range-input" min="10" max="150" value="60" oninput="updateUI()">
+      </div>
+
+      <div class="control-item">
+        <label>Rotation (<span id="v-angle">-45</span>°)</label>
+        <input type="range" id="angleSlider" class="range-input" min="-180" max="180" value="-45" oninput="updateUI()">
+      </div>
+
+      <div class="control-item">
+        <label>Opacity (<span id="v-opacity">0.4</span>)</label>
+        <input type="range" id="opacitySlider" class="range-input" min="0.1" max="1" step="0.1" value="0.4" oninput="updateUI()">
+      </div>
+
+      <button class="download-btn" id="actionBtn" onclick="applyWatermark()">⬇ Stamp & Download PDF</button>
+    </aside>
+
+    <section class="panel">
+      <div class="panel-title">Live Preview</div>
+      <div class="preview-box">
+        <div id="loader" style="display:none; font-weight:bold; color:var(--ink);">⏳ Rendering Preview...</div>
+        <div class="canvas-container" id="canvasContainer" style="display:none;">
+          <canvas id="pdfCanvas"></canvas>
+          </div>
+      </div>
+      <p style="text-align:center; font-size:12px; color:var(--ink-3); margin-top:16px;">💡 Click to select a watermark. Drag to move it.</p>
+    </section>
+  </div>
+
+  <div class="other-tools" id="otherToolsSection">
+    <div class="other-title">Other free tools</div>
+    <div class="tools-mini-grid">
+      <a href="merge-pdf.html" class="mini-card"><div class="mini-icon">🔗</div><div class="mini-name">Merge PDF</div><div class="mini-desc">Combine multiple PDFs</div></a>
+      <a href="split-pdf.html" class="mini-card"><div class="mini-icon">✂️</div><div class="mini-name">Split PDF</div><div class="mini-desc">Break PDF into separate files</div></a>
+      <a href="compress-pdf.html" class="mini-card"><div class="mini-icon">📦</div><div class="mini-name">Compress PDF</div><div class="mini-desc">Reduce PDF file size</div></a>
+      <a href="protect-pdf.html" class="mini-card"><div class="mini-icon">🔒</div><div class="mini-name">Protect PDF</div><div class="mini-desc">Add a password to your PDF</div></a>
+    </div>
+  </div>
+
+  <div class="how-section" id="howWorksSection">
+    <div class="how-title">How to <span class="serif">Watermark a PDF</span></div>
+    <div class="how-steps">
+      <div class="how-step">
+        <div class="how-num">1</div>
+        <div class="how-step-title">Upload your PDF</div>
+        <div class="how-step-desc">Drop your PDF file into the box above or click to choose from your device.</div>
+      </div>
+      <div class="how-step">
+        <div class="how-num">2</div>
+        <div class="how-step-title">Customize & Position</div>
+        <div class="how-step-desc">Type your text, adjust size/opacity, and click "Add New" for multiple stamps. Drag to position.</div>
+      </div>
+      <div class="how-step">
+        <div class="how-num">3</div>
+        <div class="how-step-title">Download File</div>
+        <div class="how-step-desc">Click 'Stamp & Download' to save your new protected PDF document instantly.</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  <div class="ft-india">Made with <span>♥</span> in India 🇮🇳</div>
+  <div class="ft-copy">© 2026 Convertkaro.in — All rights reserved.</div>
+</footer>
+
+<script>
+let originalBytes = null, pdfPageW = 0, pdfPageH = 0;
+const container = document.getElementById('canvasContainer');
+let activeWm = null; 
+
+async function handleFile(file) {
+  if(!file) return;
+  document.getElementById('uploadZone').style.display = 'none';
+  document.getElementById('workspace').classList.add('active');
+  document.getElementById('loader').style.display = 'block';
+
+  originalBytes = await file.arrayBuffer();
+  await renderCanvas();
+  
+  document.getElementById('loader').style.display = 'none';
+  container.style.display = 'inline-block';
+  
+  if(document.querySelectorAll('.wmOverlay').length === 0) {
+    addWatermark("CONFIDENTIAL");
+  }
+}
+
+async function renderCanvas() {
+  const pdf = await pdfjsLib.getDocument({data: new Uint8Array(originalBytes)}).promise;
+  const page = await pdf.getPage(1);
+  const viewport = page.getViewport({ scale: 1.2 });
+  
+  pdfPageW = page.getViewport({ scale: 1.0 }).width;
+  pdfPageH = page.getViewport({ scale: 1.0 }).height;
+
+  const canvas = document.getElementById('pdfCanvas');
+  const context = canvas.getContext('2d');
+  canvas.width = viewport.width; canvas.height = viewport.height;
+  await page.render({ canvasContext: context, viewport }).promise;
+}
+
+// ── MULTI-WATERMARK LOGIC ──
+function addWatermark(text = "NEW WATERMARK") {
+  const wm = document.createElement('div');
+  wm.className = 'wmOverlay';
+  wm.innerText = text;
+  wm.dataset.size = "60"; wm.dataset.angle = "-45"; wm.dataset.opacity = "0.4";
+  wm.style.top = "50%"; wm.style.left = "50%";
+  
+  wm.onmousedown = (e) => startDrag(e, wm);
+  wm.addEventListener('touchstart', (e) => { e.preventDefault(); startDrag(e.touches[0], wm); }, {passive: false});
+  
+  container.appendChild(wm);
+  makeActive(wm);
+}
+
+function makeActive(wm) {
+  document.querySelectorAll('.wmOverlay').forEach(el => el.classList.remove('active-wm'));
+  activeWm = wm;
+  activeWm.classList.add('active-wm');
+
+  document.getElementById('wmText').value = wm.innerText;
+  document.getElementById('sizeSlider').value = wm.dataset.size;
+  document.getElementById('angleSlider').value = wm.dataset.angle;
+  document.getElementById('opacitySlider').value = wm.dataset.opacity;
+  updateUI();
+}
+
+function snapToCenter() {
+  if(!activeWm) return;
+  activeWm.style.top = "50%";
+  activeWm.style.left = "50%";
+}
+
+function deleteActive() {
+  if(!activeWm) return;
+  activeWm.remove();
+  activeWm = null;
+  const remaining = document.querySelectorAll('.wmOverlay');
+  if(remaining.length > 0) {
+    makeActive(remaining[remaining.length - 1]);
+  } else {
+    document.getElementById('wmText').value = '';
+  }
+}
+
+function updateUI() {
+  if(!activeWm) return;
+  const size = document.getElementById('sizeSlider').value;
+  const angle = document.getElementById('angleSlider').value;
+  const opacity = document.getElementById('opacitySlider').value;
+
+  document.getElementById('v-size').innerText = size;
+  document.getElementById('v-angle').innerText = angle;
+  document.getElementById('v-opacity').innerText = opacity;
+
+  activeWm.innerText = document.getElementById('wmText').value || " ";
+  activeWm.dataset.size = size; activeWm.dataset.angle = angle; activeWm.dataset.opacity = opacity;
+  
+  activeWm.style.fontSize = size + "px";
+  activeWm.style.opacity = opacity;
+  activeWm.style.transform = `translate(-50%, -50%) rotate(${angle}deg)`;
+}
+
+// ── DRAG FUNCTIONALITY ──
+let dragging = false, initialX, initialY;
+
+function startDrag(e, wm) {
+  dragging = true; makeActive(wm);
+  if (wm.style.top === '50%') { wm.style.left = wm.offsetLeft + 'px'; wm.style.top = wm.offsetTop + 'px'; }
+  initialX = e.clientX - wm.offsetLeft; initialY = e.clientY - wm.offsetTop;
+}
+
+function moveDrag(e) {
+  if (!dragging || !activeWm) return;
+  activeWm.style.left = (e.clientX - initialX) + 'px';
+  activeWm.style.top = (e.clientY - initialY) + 'px';
+}
+
+function endDrag() { dragging = false; }
+
+document.onmousemove = moveDrag;
+document.onmouseup = endDrag;
+document.addEventListener('touchmove', (e) => { if(dragging) { e.preventDefault(); moveDrag(e.touches[0]); } }, {passive: false});
+document.addEventListener('touchend', endDrag);
+
+// ── CORE LOGIC: PDF-LIB MATH & OUTPUT ──
+async function applyWatermark() {
+  const btn = document.getElementById('actionBtn');
+  btn.innerText = "Processing..."; btn.disabled = true;
+
+  try {
+    const { PDFDocument, rgb, degrees, StandardFonts } = PDFLib;
+    const pdfDoc = await PDFDocument.load(originalBytes);
+    const font = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+    const pages = pdfDoc.getPages();
+
+    const cRect = document.getElementById('pdfCanvas').getBoundingClientRect();
+    const overlays = document.querySelectorAll('.wmOverlay');
+
+    pages.forEach(p => {
+      overlays.forEach(wm => {
+        const text = wm.innerText;
+        if(!text.trim()) return;
+
+        const size = parseInt(wm.dataset.size);
+        const angle = parseInt(wm.dataset.angle);
+        const opacity = parseFloat(wm.dataset.opacity);
+
+        const rect = wm.getBoundingClientRect();
+        const cssCX = rect.left - cRect.left + rect.width/2;
+        const cssCY = rect.top - cRect.top + rect.height/2;
+
+        const scaleX = pdfPageW / cRect.width;
+        const scaleY = pdfPageH / cRect.height;
+        const cx = cssCX * scaleX;
+        const cy = pdfPageH - (cssCY * scaleY);
+
+        const dx = -font.widthOfTextAtSize(text, size) / 2;
+        const dy = -size * 0.28; 
+
+        const rad = (-angle) * Math.PI / 180;
+        const rDx = dx * Math.cos(rad) - dy * Math.sin(rad);
+        const rDy = dx * Math.sin(rad) + dy * Math.cos(rad);
+
+        p.drawText(text, {
+          x: cx + rDx,
+          y: cy + rDy,
+          size: size, opacity: opacity, font: font,
+          rotate: degrees(-angle), color: rgb(0,0,0)
+        });
+      });
+    });
+
+    const bytes = await pdfDoc.save();
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(new Blob([bytes], {type: "application/pdf"}));
+    link.download = "watermarked_convertkaro.pdf";
+    link.click();
+  } catch (err) {
+    alert("An error occurred while generating the PDF.");
+    console.error(err);
+  }
+  
+  btn.innerText = "⬇ Stamp & Download PDF"; btn.disabled = false;
+}
+</script>
+</body>
+</html>
