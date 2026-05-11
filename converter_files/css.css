@@ -1,0 +1,21 @@
+BODY {
+	MARGIN: 60px; FONT: 75%/150% "Trebuchet MS", "Lucida Grande", "Bitstream Vera Sans", Arial, Helvetica, sans-serif; COLOR: #666666
+}
+FIELDSET {
+	BORDER-RIGHT: #781351 2px solid; BORDER-TOP: #781351 2px solid; BACKGROUND: #ffa20c; BORDER-LEFT: #781351 2px solid; WIDTH: 60em; BORDER-BOTTOM: #781351 2px solid
+}
+TEXTAREA {
+	BORDER-RIGHT: #781351 1px solid; BORDER-TOP: #781351 1px solid; BACKGROUND: #fee3ad; BORDER-LEFT: #781351 1px solid; COLOR: #781351; BORDER-BOTTOM: #781351 1px solid
+}
+LEGEND {
+	BORDER-RIGHT: #781351 1px solid; PADDING-RIGHT: 6px; BORDER-TOP: #781351 1px solid; PADDING-LEFT: 6px; BACKGROUND: #781351; PADDING-BOTTOM: 2px; BORDER-LEFT: #781351 1px solid; COLOR: #fff; PADDING-TOP: 2px; BORDER-BOTTOM: #781351 1px solid
+}
+.submit INPUT {
+	MARGIN-LEFT: 4.5em
+}
+INPUT {
+	BORDER-RIGHT: #781351 1px solid; BORDER-TOP: #781351 1px solid; BACKGROUND: #fee3ad; BORDER-LEFT: #781351 1px solid; COLOR: #781351; BORDER-BOTTOM: #781351 1px solid
+}
+.submit INPUT {
+	BORDER-RIGHT: #d7b9c9 2px outset; BORDER-TOP: #d7b9c9 2px outset; BACKGROUND: #ffa20f; BORDER-LEFT: #d7b9c9 2px outset; COLOR: #000; BORDER-BOTTOM: #d7b9c9 2px outset
+}
