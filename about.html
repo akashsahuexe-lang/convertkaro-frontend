@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <title>About Us | Convertkaro.in - Free PDF & Utility Tools</title>
+    <meta name="description" content="Learn more about Convertkaro.in, your trusted platform from Kanpur, India for free PDF merging, compressing, font conversion, and student form utilities.">
+    <meta name="keywords" content="about convertkaro, free pdf tools, online image compressor, hindi font converter, contact convertkaro, merge pdf, split pdf">
+    
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+
+    <style>
+        /* ── UI/UX FRAMEWORK ── */
+        *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+        html { scroll-behavior:smooth; }
+        :root { 
+            --bg: #f8f7f4; --white: #ffffff; --red: #e02b20; --red-hover: #c4231a; 
+            --red-light: rgba(224,43,32,0.06); --ink: #141414; --ink-2: #3d3d3d; 
+            --ink-3: #888; --border: #e4e2dc; 
+        }
+        body { background: var(--bg); color: var(--ink); font-family: 'Plus Jakarta Sans', sans-serif; -webkit-font-smoothing: antialiased; }
+
+        .container-1140 { max-width: 1140px; margin: 0 auto; padding: 0 48px; width: 100%; box-sizing: border-box; }
+
+        /* ── NAV BAR ── */
+        nav { position: fixed; top:0; left:0; right:0; z-index:100; height:68px; background:rgba(248,247,244,0.95); backdrop-filter:blur(20px); border-bottom:1px solid var(--border); display:flex; align-items:center; }
+        .nav-inner { display: flex; align-items: center; justify-content: space-between; width: 100%; height: 100%; }
+        .logo { display:flex; align-items:center; gap:9px; text-decoration:none; flex: 1; } 
+        .logo-mark { width:28px; height:28px; border-radius:6px; overflow:hidden; display:grid; place-items:center; } 
+        .logo-mark img { width:100%; height:100%; object-fit:cover; }
+        .logo-name { font-size:16px; font-weight:800; color:var(--ink); letter-spacing:-0.3px; } 
+        .logo-name span { color:var(--red); }
+        .nav-links { display:flex; gap:32px; list-style:none; position: absolute; left: 50%; transform: translateX(-50%); margin: 0; padding: 0; } 
+        .nav-links a { font-size:13px; font-weight:500; color:var(--ink-3); text-decoration:none; transition:color .2s; }
+        .nav-links a:hover { color:var(--ink); }
+        .nav-links a.active { color: var(--red); font-weight: 700; }
+        .nav-right { flex: 1; display: flex; justify-content: flex-end; }
+        .nav-cta { background:var(--red); color:#fff; font-size:13px; font-weight:600; padding:10px 24px; border-radius:8px; cursor:pointer; border:none; transition: 0.2s; letter-spacing: 0.2px; font-family: inherit; text-decoration: none;}
+        .nav-cta:hover { background:var(--red-hover); transform:translateY(-1px); box-shadow: 0 4px 12px rgba(224,43,32,0.2); }
+
+        /* ── ABOUT HERO ── */
+        .about-hero { padding: 160px 0 60px 0; text-align: center; max-width: 900px; margin: 0 auto; }
+        .about-eyebrow { font-size: 13px; font-weight: 700; color: var(--red); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 16px; display: block; }
+        .about-title { font-size: clamp(36px, 5vw, 56px); font-weight: 800; letter-spacing: -1.5px; color: var(--ink); line-height: 1.1; margin-bottom: 24px; }
+        .about-title .serif { font-family: 'Instrument Serif', serif; font-style: italic; font-weight: 400; color: var(--red); letter-spacing: 0; font-size: 1.1em;}
+        .about-subtitle { font-size: 18px; color: var(--ink-2); line-height: 1.6; font-weight: 400; max-width: 700px; margin: 0 auto;}
+
+        /* ── STORY SECTION ── */
+        .story-section { background: var(--white); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); padding: 80px 0; }
+        .story-grid { display: grid; grid-template-columns: 1fr 1.2fr; gap: 60px; align-items: center; }
+        .story-text h2 { font-size: 32px; font-weight: 800; margin-bottom: 24px; letter-spacing: -1px; color: var(--ink);}
+        .story-text p { font-size: 15px; color: var(--ink-2); line-height: 1.8; margin-bottom: 16px; }
+        .story-image { background: linear-gradient(135deg, var(--bg) 0%, #fff 100%); border: 1px solid var(--border); border-radius: 20px; height: 100%; min-height: 350px; display: flex; align-items: center; justify-content: center; box-shadow: inset 0 0 40px rgba(0,0,0,0.02);}
+
+        /* ── CONTACT US ── */
+        .contact-section { padding: 80px 0 40px; text-align: center; }
+        .contact-header { margin-bottom: 48px; }
+        .contact-header h2 { font-size: 32px; font-weight: 800; letter-spacing: -1px; margin-bottom: 12px;}
+        .contact-header p { color: var(--ink-2); font-size: 15px; }
+        
+        .contact-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+        .contact-card { background: var(--white); border: 1px solid var(--border); padding: 32px 24px; border-radius: 16px; transition: 0.3s; }
+        .contact-card:hover { border-color: var(--red); box-shadow: 0 10px 30px rgba(224,43,32,0.06); transform: translateY(-4px); }
+        .cc-icon { width: 56px; height: 56px; background: var(--red-light); border-radius: 12px; display: grid; place-items: center; font-size: 24px; margin: 0 auto 20px; color: var(--red); }
+        .contact-card h3 { font-size: 16px; font-weight: 800; margin-bottom: 8px; color: var(--ink); }
+        .contact-card p, .contact-card a { font-size: 14px; color: var(--ink-2); text-decoration: none; font-weight: 500; transition: 0.2s;}
+        .contact-card a:hover { color: var(--red); }
+
+        /* ── SEO TOOLS LINKS SECTION ── */
+        .seo-links-section { padding: 40px 0 80px; }
+        .seo-links-box { background: var(--white); border: 1px solid var(--border); border-radius: 16px; padding: 40px; }
+        .seo-links-box h3 { font-size: 18px; font-weight: 800; margin-bottom: 24px; letter-spacing: -0.3px; color: var(--ink); text-align: center;}
+        
+        .seo-tools-grid { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
+        .seo-tool-link { 
+            background: var(--bg); color: var(--ink-2); padding: 10px 16px; border-radius: 8px; 
+            font-size: 13px; font-weight: 600; text-decoration: none; border: 1px solid var(--border);
+            transition: all 0.2s ease;
+        }
+        .seo-tool-link:hover { background: var(--red); color: var(--white); border-color: var(--red); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(224,43,32,0.2);}
+
+        /* ── FOOTER ── */
+        footer { border-top: 1px solid var(--border); background: transparent; width: 100%; }
+        .footer-inner { display: flex; justify-content: space-between; align-items: center; padding: 32px 48px; font-size: 12px; color: var(--ink-3); }
+        .ft-india span { color: var(--red); font-size: 14px; }
+        .ft-india small { font-size: 9px; font-weight: 600; letter-spacing: 0.5px; color: var(--ink-3); margin-left: 2px;}
+
+        @media(max-width: 900px){
+            nav { padding: 0 20px; } .nav-links { display: none; } .container-1140 { padding: 0 24px; }
+            .about-hero { padding-top: 120px; }
+            .story-grid { grid-template-columns: 1fr; gap: 40px; }
+            .contact-grid { grid-template-columns: 1fr; }
+            .seo-links-box { padding: 24px; }
+            .footer-inner { padding: 24px 20px; flex-direction: column; gap: 12px; text-align: center; }
+        }
+    </style>
+</head>
+<body>
+
+<nav>
+    <div class="nav-inner container-1140">
+        <a href="index.html" class="logo">
+            <div class="logo-mark"><img src="favicon.ico" alt="CK"></div>
+            <div class="logo-name">Convertkaro<span>.in</span></div>
+        </a>
+        <ul class="nav-links">
+            <li><a href="index.html#tools">Tools</a></li>
+            <li><a href="index.html#how">How it works</a></li>
+            <li><a href="about.html" class="active">About Us</a></li>
+        </ul>
+        <div class="nav-right">
+            <a href="index.html#tools" class="nav-cta">Explore Tools</a>
+        </div>
+    </div>
+</nav>
+
+<header class="about-hero container-1140">
+    <span class="about-eyebrow">Our Mission</span>
+    <h1 class="about-title">Digital utility tools should be<br><span class="serif">simple, fast, & free.</span></h1>
+    <p class="about-subtitle">We are building the ultimate everyday toolkit for students, DTP operators, and professionals across India. No forced sign-ups. No hidden paywalls.</p>
+</header>
+
+<section class="story-section">
+    <div class="container-1140 story-grid">
+        <div class="story-image">
+            <img src="favicon.ico" alt="Convertkaro Logo" style="width: 160px; height: 160px; border-radius: 32px; box-shadow: 0 16px 40px rgba(224,43,32,0.15);">
+        </div>
+        <div class="story-text">
+            <h2>The Convertkaro Story</h2>
+            <p>Convertkaro was born out of everyday digital frustration. Whether you are a student trying to <strong>compress a photo and signature</strong> for a government exam, or a professional needing to <strong>merge PDF files</strong> securely, the tools available online were either cluttered with ads or demanded expensive subscriptions.</p>
+            <p>Founded by <strong>Akash Sahu</strong>, a design professional based in Kanpur, India, Convertkaro.in was built to solve these exact roadblocks. Our platform provides high-quality, fully accurate utility tools—including an advanced <strong>Hindi Font Converter (Unicode to Kruti Dev / 4CGandhi)</strong> crafted specifically for local publishers and typists.</p>
+            <p>Our philosophy is straightforward: provide 100% free PDF utilities and image tools that process your files directly inside your browser. This means your data is never uploaded to external servers, ensuring maximum privacy and lightning-fast speeds.</p>
+        </div>
+    </div>
+</section>
+
+<section class="contact-section container-1140">
+    <div class="contact-header">
+        <h2>Contact Us</h2>
+        <p>Have questions, feedback, or need support with our tools? We'd love to hear from you.</p>
+    </div>
+    <div class="contact-grid">
+        <div class="contact-card">
+            <div class="cc-icon">📍</div>
+            <h3>Location</h3>
+            <p>Kanpur, India</p>
+        </div>
+        <div class="contact-card">
+            <div class="cc-icon">✉️</div>
+            <h3>Email Us</h3>
+            <p><a href="mailto:thebutterflyeffectchannel365@gmail.com">thebutterflyeffectchannel365@gmail.com</a></p>
+        </div>
+        <div class="contact-card">
+            <div class="cc-icon">📞</div>
+            <h3>Call Us</h3>
+            <p><a href="tel:+919717475418">+91 9717475418</a></p>
+        </div>
+    </div>
+</section>
+
+<section class="seo-links-section container-1140">
+    <div class="seo-links-box">
+        <h3>Explore Our Free Tools</h3>
+        <div class="seo-tools-grid">
+            <a href="merge-pdf.html" class="seo-tool-link">Merge PDF</a>
+            <a href="split-pdf.html" class="seo-tool-link">Split PDF</a>
+            <a href="compress-pdf.html" class="seo-tool-link">Compress PDF</a>
+            <a href="crop-pdf.html" class="seo-tool-link">Crop PDF</a>
+            <a href="protect-pdf.html" class="seo-tool-link">Protect PDF</a>
+            <a href="unlock-pdf.html" class="seo-tool-link">Unlock PDF</a>
+            <a href="pdf-to-image.html" class="seo-tool-link">PDF to Image</a>
+            <a href="image-to-pdf.html" class="seo-tool-link">Image to PDF</a>
+            <a href="watermark-pdf.html" class="seo-tool-link">Watermark PDF</a>
+            <a href="compress-image.html" class="seo-tool-link">Image Resizer</a>
+            <a href="converter.html" class="seo-tool-link">Hindi Font Converter</a>
+            <a href="age-calculator.html" class="seo-tool-link">Age Calculator</a>
+            <a href="typing-test.html" class="seo-tool-link">Typing Test</a>
+            <a href="qr-generator.html" class="seo-tool-link">QR Generator</a>
+        </div>
+    </div>
+</section>
+
+<footer>
+    <div class="footer-inner container-1140" style="padding-left: 0; padding-right: 0;">
+        <div class="ft-india">Made with <span>♥</span> in India <small>IN</small></div>
+        <div>© 2026 Convertkaro.in — All rights reserved.</div>
+    </div>
+</footer>
+
+</body>
+</html>
