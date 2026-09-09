@@ -209,7 +209,8 @@ footer { border-top:1px solid var(--border); background:var(--white); padding:32
 
 <div class="toast" id="toast"></div>
 
-<input type="file" id="fileInput" accept=".pdf" style="position:absolute; width:1px; height:1px; opacity:0; pointer-events:none;" onchange="handleFile(this.files[0])">
+<!-- Updated to support multiple files -->
+<input type="file" id="fileInput" accept=".pdf" multiple style="position:absolute; width:1px; height:1px; opacity:0; pointer-events:none;" onchange="handleFiles(this.files)">
 
 <nav>
   <a href="index.html" class="logo">
@@ -221,7 +222,7 @@ footer { border-top:1px solid var(--border); background:var(--white); padding:32
     <li><a href="index.html#how">How it works</a></li> 
     <li><a href="index.html#about">About</a></li>
   </ul>
-  <label for="fileInput" class="nav-cta" style="cursor:pointer; display:inline-flex; align-items:center;">Upload PDF & Convert</label>
+  <label for="fileInput" class="nav-cta" style="cursor:pointer; display:inline-flex; align-items:center;">Upload PDFs & Convert</label>
 </nav>
 
 <div class="breadcrumb container-1140">
@@ -242,11 +243,11 @@ footer { border-top:1px solid var(--border); background:var(--white); padding:32
 
   <div class="upload-zone fade-up" id="uploadZone" onclick="document.getElementById('fileInput').click()">
     <div class="uz-icon">📄</div>
-    <div class="uz-title">Drop your PDF here</div>
-    <div class="uz-sub">or click to choose a file from your device</div>
-    <div class="uz-btn">Choose PDF File</div>
+    <div class="uz-title">Drop your PDFs here</div>
+    <div class="uz-sub">or click to choose files from your device</div>
+    <div class="uz-btn">Choose PDF Files</div>
     <div class="uz-privacy" style="margin-top: 18px; font-size: 13px; color: var(--ink-3); font-weight: 500; display: flex; align-items: center; justify-content: center; gap: 6px;">
-      🔒 Your file never leaves your device — 100% private
+      🔒 Your files never leave your device — 100% private
     </div>
   </div>
 
@@ -366,7 +367,7 @@ footer { border-top:1px solid var(--border); background:var(--white); padding:32
       </div>
       <div id="rangeWrap" style="display:none">
         <input type="text" class="page-range-input" id="rangeInput" placeholder="e.g. 1-3, 5, 7-9">
-        <div class="page-hint">Enter page numbers or ranges separated by commas</div>
+        <div class="page-hint">Enter page numbers or ranges separated by commas. This range will be extracted from each uploaded PDF.</div>
       </div>
     </div>
 
@@ -438,8 +439,8 @@ footer { border-top:1px solid var(--border); background:var(--white); padding:32
     <div class="how-steps">
       <div class="how-step">
         <div class="how-num">1</div>
-        <div class="how-step-title">Upload your PDF</div>
-        <div class="how-step-desc">Drop your PDF or click to select it. Works entirely in your browser — no upload to servers.</div>
+        <div class="how-step-title">Upload your PDFs</div>
+        <div class="how-step-desc">Drop your PDFs or click to select them. Works entirely in your browser — no upload to servers.</div>
       </div>
       <div class="how-step">
         <div class="how-num">2</div>
@@ -464,8 +465,7 @@ footer { border-top:1px solid var(--border); background:var(--white); padding:32
 <script>
 pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
-let pdfJsDoc   = null;
-let totalPages = 0;
+let pdfDocs    = []; // Stores { pdfJsDoc, name, size, totalPages }
 let curFormat  = 'jpg';
 let pageMode   = 'all';
 let currentDpi = 300;
@@ -477,32 +477,55 @@ zone.addEventListener('dragover',  e => { e.preventDefault(); zone.classList.add
 zone.addEventListener('dragleave', () => zone.classList.remove('drag-on'));
 zone.addEventListener('drop', e => {
   e.preventDefault(); zone.classList.remove('drag-on');
-  const f = e.dataTransfer.files[0];
-  if(!f) return;
-  if(f.type !== 'application/pdf') { showToast('Please drop a PDF file','error'); return; }
-  handleFile(f);
+  if(e.dataTransfer.files.length > 0) {
+      handleFiles(e.dataTransfer.files);
+  }
 });
 
-async function handleFile(f) {
-  if(!f || f.type !== 'application/pdf') {
-      showToast('Please select a valid PDF file', 'error');
+document.getElementById('rangeInput').addEventListener('input', updateConvertInfo);
+
+async function handleFiles(fileList) {
+  const files = Array.from(fileList).filter(f => f.type === 'application/pdf' || f.name.toLowerCase().endsWith('.pdf'));
+  
+  if(files.length === 0) {
+      showToast('Please select valid PDF files', 'error');
       return;
   }
-  showToast('Loading PDF...');
-  try {
-    const buf = await f.arrayBuffer();
-    pdfJsDoc = await pdfjsLib.getDocument({ data: new Uint8Array(buf) }).promise;
-    totalPages = pdfJsDoc.numPages;
+  
+  showToast(`Loading ${files.length} PDF(s)...`);
+  pdfDocs = [];
+  let totalCombinedPages = 0;
+  let totalSize = 0;
 
-    document.getElementById('panelFilename').textContent = f.name;
-    document.getElementById('panelFilemeta').textContent = totalPages + ' page' + (totalPages!==1?'s':'') + ' · ' + formatSize(f.size);
-    document.getElementById('convertInfo').textContent   = totalPages + ' pages ready to convert';
+  try {
+    for(let f of files) {
+      const buf = await f.arrayBuffer();
+      const doc = await pdfjsLib.getDocument({ data: new Uint8Array(buf) }).promise;
+      pdfDocs.push({
+        pdfJsDoc: doc,
+        name: f.name,
+        size: f.size,
+        totalPages: doc.numPages
+      });
+      totalCombinedPages += doc.numPages;
+      totalSize += f.size;
+    }
+
+    if(pdfDocs.length === 1) {
+      document.getElementById('panelFilename').textContent = pdfDocs[0].name;
+      document.getElementById('panelFilemeta').textContent = pdfDocs[0].totalPages + ' page' + (pdfDocs[0].totalPages!==1?'s':'') + ' · ' + formatSize(pdfDocs[0].size);
+    } else {
+      document.getElementById('panelFilename').textContent = `${pdfDocs.length} PDF files selected`;
+      document.getElementById('panelFilemeta').textContent = totalCombinedPages + ' total pages · ' + formatSize(totalSize);
+    }
+
     document.getElementById('toolPanel').classList.add('active');
     document.getElementById('uploadZone').style.display = 'none';
-    showToast('PDF loaded ✓','success');
+    updateConvertInfo();
+    showToast('PDFs loaded ✓','success');
   } catch(e) {
     console.error(e);
-    showToast('Could not load PDF: ' + e.message, 'error');
+    showToast('Could not load PDFs: ' + e.message, 'error');
   }
 }
 
@@ -533,13 +556,18 @@ function setDpi(v) {
 }
 
 function updateConvertInfo() {
-  if(!pdfJsDoc) return;
-  const pages = getPageList().length;
+  if(pdfDocs.length === 0) return;
+  
+  let targetPages = 0;
+  for(let docObj of pdfDocs) {
+      targetPages += getPageListForDoc(docObj.totalPages).length;
+  }
+
   if(curFormat === 'tiff') {
-    document.getElementById('convertInfo').textContent = pages + ' page' + (pages!==1?'s':'') + ' · Pixels Intact → CMYK 72 DPI TIFF';
+    document.getElementById('convertInfo').textContent = targetPages + ' page' + (targetPages!==1?'s':'') + ' · Pixels Intact → CMYK 72 DPI TIFF';
   } else {
     const dpi = currentDpi || 300;
-    document.getElementById('convertInfo').textContent = pages + ' page' + (pages!==1?'s':'') + ' · ' + dpi + ' DPI · ' + curFormat.toUpperCase();
+    document.getElementById('convertInfo').textContent = targetPages + ' page' + (targetPages!==1?'s':'') + ' · ' + dpi + ' DPI · ' + curFormat.toUpperCase();
   }
 }
 
@@ -551,18 +579,18 @@ function setPageMode(mode) {
   updateConvertInfo();
 }
 
-function getPageList() {
-  if(pageMode === 'all') return Array.from({length:totalPages}, (_,i) => i+1);
+function getPageListForDoc(maxPages) {
+  if(pageMode === 'all') return Array.from({length:maxPages}, (_,i) => i+1);
   const raw = document.getElementById('rangeInput').value;
-  if(!raw.trim()) return Array.from({length:totalPages}, (_,i) => i+1);
+  if(!raw.trim()) return Array.from({length:maxPages}, (_,i) => i+1);
   const pages = new Set();
   raw.split(',').map(s => s.trim()).forEach(part => {
     if(part.includes('-')) {
       const [a,b] = part.split('-').map(Number);
-      for(let i=Math.max(1,a); i<=Math.min(b,totalPages); i++) pages.add(i);
+      for(let i=Math.max(1,a); i<=Math.min(b,maxPages); i++) pages.add(i);
     } else {
       const n = parseInt(part);
-      if(n >= 1 && n <= totalPages) pages.add(n);
+      if(n >= 1 && n <= maxPages) pages.add(n);
     }
   });
   return [...pages].sort((a,b)=>a-b);
@@ -679,7 +707,7 @@ function canvasToTiff(canvas, dpi) {
 }
 
 async function doConvert() {
-  if(!pdfJsDoc) return;
+  if(pdfDocs.length === 0) return;
 
   const btn          = document.getElementById('convertBtn');
   const progressWrap = document.getElementById('progressWrap');
@@ -696,63 +724,74 @@ async function doConvert() {
   results = [];
   lineLoader.classList.remove('indeterminate');
 
-  const pageList  = getPageList();
-  const fmt       = curFormat; 
-  // If TIFF, we render at 300 DPI to get high-res pixels, then tag as 72 DPI
-  const dpi       = fmt === 'tiff' ? 300 : Math.min(1200, Math.max(72, currentDpi));
-  const scale     = dpi / 72; 
-  const jpgQ      = parseFloat(document.getElementById('jpgQuality').value);
-  const bgColor   = document.getElementById('bgColor').value;
-  const baseName  = document.getElementById('panelFilename').textContent.replace(/\.pdf$/i,'');
+  const fmt     = curFormat; 
+  const dpi     = fmt === 'tiff' ? 300 : Math.min(1200, Math.max(72, currentDpi));
+  const scale   = dpi / 72; 
+  const jpgQ    = parseFloat(document.getElementById('jpgQuality').value);
+  const bgColor = document.getElementById('bgColor').value;
 
   try {
-    for(let idx = 0; idx < pageList.length; idx++) {
-      const pageNum = pageList[idx];
-      const pct = Math.round((idx / pageList.length) * 92);
-      setProgress(pct, 'Converting page ' + pageNum + ' of ' + totalPages + '...');
-      document.getElementById('progressSub').textContent =
-        fmt === 'tiff' ? 'Rendering Pixels Intact → converting to CMYK 72 DPI TIFF' :
-        'Rendering at ' + dpi + ' DPI in ' + fmt.toUpperCase();
-      await tick();
+    let totalTasks = 0;
+    for(let d of pdfDocs) totalTasks += getPageListForDoc(d.totalPages).length;
+    
+    let processedTasks = 0;
 
-      const page = await pdfJsDoc.getPage(pageNum);
-      const vp   = page.getViewport({ scale });
-      const cv   = document.createElement('canvas');
-      cv.width   = Math.floor(vp.width);
-      cv.height  = Math.floor(vp.height);
-      const ctx  = cv.getContext('2d');
+    for(let docObj of pdfDocs) {
+      const pageList = getPageListForDoc(docObj.totalPages);
+      const baseName = docObj.name.replace(/\.pdf$/i,'');
 
-      if(bgColor === 'white' || fmt !== 'png') {
-        ctx.fillStyle = '#ffffff';
-        ctx.fillRect(0, 0, cv.width, cv.height);
+      for(let idx = 0; idx < pageList.length; idx++) {
+        const pageNum = pageList[idx];
+        const pct = Math.round((processedTasks / totalTasks) * 92);
+        
+        let labelExt = '';
+        if(pdfDocs.length > 1) {
+            labelExt = ` (File ${pdfDocs.indexOf(docObj) + 1}/${pdfDocs.length})`;
+        }
+        
+        setProgress(pct, `Converting page ${pageNum}${labelExt}...`);
+        document.getElementById('progressSub').textContent =
+          fmt === 'tiff' ? 'Rendering Pixels Intact → converting to CMYK 72 DPI TIFF' :
+          'Rendering at ' + dpi + ' DPI in ' + fmt.toUpperCase();
+        await tick();
+
+        const page = await docObj.pdfJsDoc.getPage(pageNum);
+        const vp   = page.getViewport({ scale });
+        const cv   = document.createElement('canvas');
+        cv.width   = Math.floor(vp.width);
+        cv.height  = Math.floor(vp.height);
+        const ctx  = cv.getContext('2d');
+
+        if(bgColor === 'white' || fmt !== 'png') {
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(0, 0, cv.width, cv.height);
+        }
+
+        await page.render({ canvasContext: ctx, viewport: vp }).promise;
+
+        let blob, ext, dataUrl;
+
+        if(fmt === 'jpg') {
+          dataUrl = cv.toDataURL('image/jpeg', jpgQ);
+          const b64 = dataUrl.split(',')[1];
+          blob = new Blob([Uint8Array.from(atob(b64), c=>c.charCodeAt(0))], {type:'image/jpeg'});
+          ext = 'jpg';
+        } else if(fmt === 'png') {
+          dataUrl = cv.toDataURL('image/png');
+          const b64 = dataUrl.split(',')[1];
+          blob = new Blob([Uint8Array.from(atob(b64), c=>c.charCodeAt(0))], {type:'image/png'});
+          ext = 'png';
+        } else {
+          const tiffBytes = canvasToTiff(cv, 72);
+          blob    = new Blob([tiffBytes], {type:'image/tiff'});
+          dataUrl = cv.toDataURL('image/jpeg', 0.7); 
+          ext = 'tiff';
+        }
+
+        const name = baseName + '_page' + String(pageNum).padStart(docObj.totalPages>9?2:1,'0') + '.' + ext;
+        results.push({ name, blob, dataUrl });
+        processedTasks++;
       }
-
-      await page.render({ canvasContext: ctx, viewport: vp }).promise;
-
-      let blob, ext, dataUrl;
-
-      if(fmt === 'jpg') {
-        dataUrl = cv.toDataURL('image/jpeg', jpgQ);
-        const b64 = dataUrl.split(',')[1];
-        blob = new Blob([Uint8Array.from(atob(b64), c=>c.charCodeAt(0))], {type:'image/jpeg'});
-        ext = 'jpg';
-      } else if(fmt === 'png') {
-        dataUrl = cv.toDataURL('image/png');
-        const b64 = dataUrl.split(',')[1];
-        blob = new Blob([Uint8Array.from(atob(b64), c=>c.charCodeAt(0))], {type:'image/png'});
-        ext = 'png';
-      } else {
-        // --- TIFF LOGIC: RESAMPLE OFF ---
-        // Pass original high-res canvas (cv) directly to keep pixel dimensions 
-        // but write 72 into the DPI metadata for the TIFF header.
-        const tiffBytes = canvasToTiff(cv, 72);
-        blob    = new Blob([tiffBytes], {type:'image/tiff'});
-        dataUrl = cv.toDataURL('image/jpeg', 0.7); // Low-res preview for UI only
-        ext = 'tiff';
-      }
-
-      const name = baseName + '_page' + String(pageNum).padStart(totalPages>9?2:1,'0') + '.' + ext;
-      results.push({ name, blob, dataUrl });
     }
 
     setProgress(100, 'Done!');
@@ -782,8 +821,15 @@ async function downloadZip() {
   const zip = new JSZip();
   for(const r of results) zip.file(r.name, r.blob);
   const zipBlob = await zip.generateAsync({ type:'blob', compression:'DEFLATE', compressionOptions:{level:6} });
-  const baseName = document.getElementById('panelFilename').textContent.replace(/\.pdf$/i,'');
-  const zipName  = baseName + '_images_' + curFormat.toUpperCase() + '.zip';
+  
+  let zipName;
+  if(pdfDocs.length === 1) {
+      const baseName = pdfDocs[0].name.replace(/\.pdf$/i,'');
+      zipName = baseName + '_images_' + curFormat.toUpperCase() + '.zip';
+  } else {
+      zipName = `Batch_Converted_Images_${curFormat.toUpperCase()}.zip`;
+  }
+  
   triggerDownload(zipBlob, zipName);
 }
 
@@ -817,7 +863,7 @@ function showResults() {
 }
 
 function resetTool() {
-  pdfJsDoc = null; totalPages = 0; results = [];
+  pdfDocs = []; results = [];
   document.getElementById('toolPanel').classList.remove('active');
   document.getElementById('resultPanel').classList.remove('active');
   document.getElementById('resultsGrid').innerHTML = '';
