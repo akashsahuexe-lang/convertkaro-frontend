@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Notice Desk - ConvertKaro</title>
+<meta name="robots" content="noindex">
+<!--
+  ConvertKaro "Notice Desk" tab.  Upload this file next to your other tool pages (self-contained, embedded CSS).
+  1) Set DESK_URL below to the address of your desk (a subdomain of convertkaro.in, see DEPLOY.md).
+  2) Keep the same header/footer placeholder lines your other pages use (marked below).
+  The login happens INSIDE the desk (inside the frame below); this page holds no password and no API key.
+-->
+<style>
+  :root{--cream:#f7f0e1;--paper:#fffdf8;--ink:#2b1d18;--muted:#7a675c;--rule:#e0d3bd;--red:#a82323;--gold:#c8962a}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--cream);color:var(--ink);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+  .intro{max-width:1100px;margin:0 auto;padding:22px 20px 10px;display:flex;gap:16px;align-items:flex-end;justify-content:space-between;flex-wrap:wrap}
+  .intro h1{margin:0 0 4px;font-size:1.6rem;letter-spacing:-.01em}
+  .intro p{margin:0;color:var(--muted);max-width:62ch}
+  .intro a.full{color:var(--red);font-weight:600;text-decoration:none;border-bottom:2px solid var(--gold)}
+  .frame-wrap{max-width:1280px;margin:10px auto 28px;padding:0 20px}
+  iframe#desk{display:block;width:100%;height:calc(100vh - 150px);min-height:620px;border:1px solid var(--rule);border-top:3px solid var(--gold);border-radius:6px;background:var(--paper)}
+  .fallback{display:none;margin:14px 0;padding:14px 16px;background:var(--paper);border:1px solid var(--rule);border-radius:6px}
+  .fallback.show{display:block}
+</style>
+</head>
+<body>
+
+<!-- === keep your site's usual header placeholder / injection line here (same as your other pages) === -->
+<div id="header-placeholder"></div>
+
+<section class="intro">
+  <div>
+    <h1>Notice Desk</h1>
+    <p>English newspaper notice in, Kruti Dev Hindi Word file out. For authorised users only: log in below.</p>
+  </div>
+  <a class="full" id="full" href="#" target="_blank" rel="noopener">Open in a full window</a>
+</section>
+
+<div class="frame-wrap">
+  <iframe id="desk" title="ConvertKaro Notice Desk" allow="clipboard-write" referrerpolicy="same-origin"></iframe>
+  <div class="fallback" id="fallback">The desk could not be shown inside this page. <a id="fb" href="#" target="_blank" rel="noopener">Open it in a new tab</a>.</div>
+  <noscript><p>Please enable JavaScript, or open the desk directly.</p></noscript>
+</div>
+
+<!-- === keep your site's usual footer placeholder / injection line here === -->
+<div id="footer-placeholder"></div>
+
+<script>
+  // >>> change this to your desk address (must be a subdomain of convertkaro.in so the login cookie works in a frame)
+  var DESK_URL = "https://desk.convertkaro.in/";
+
+  var frame = document.getElementById("desk");
+  document.getElementById("full").href = DESK_URL;
+  document.getElementById("fb").href = DESK_URL;
+  var loaded = false;
+  frame.addEventListener("load", function () { loaded = true; });
+  frame.src = DESK_URL;
+  setTimeout(function () { if (!loaded) document.getElementById("fallback").classList.add("show"); }, 9000);
+</script>
+</body>
+</html>
